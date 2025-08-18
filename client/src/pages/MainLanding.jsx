@@ -6,7 +6,8 @@ import axios from 'axios';
 import AppDownloadPage from './AppDownloadPage';
 import CoinList from '../components/CoinList';
 import RechargeMethodPage from './RechargeMethodPage';
-import ContentList from '../components/ContentList';
+import ContentListBanner from '../components/ContentListBanner';
+import ContentListVideo from '../components/ContentListVideo';
 import WalletPage from './WalletPage';
 import MyProfilePage from './MyProfilePage';
 import BalancePage from './BalancePage';
@@ -96,8 +97,14 @@ export default function MainLanding({ user }) {
         <>
             {location.pathname === "/" && (
                 <>
-                    <div className="flex ">
-                        <ContentList />
+                    <div className="w-full max-w-full px-2 sm:px-4 md:px-6 lg:px-8">
+                        <div className="space-y-4 sm:space-y-6">
+                            {/* 배너 컴포넌트 */}
+                            <ContentListBanner />
+
+                            {/* 비디오 컴포넌트 */}
+                            <ContentListVideo />
+                        </div>
                     </div>
 
                     <div className="flex justify-between items-center px-6 py-2 bg-white">

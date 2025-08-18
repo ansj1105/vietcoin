@@ -1,0 +1,201 @@
+/* ContentListBanner 반응형 스타일 */
+
+.banner-container {
+    width: 100%;
+    position: relative;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    margin-bottom: 1rem;
+}
+
+/* 반응형 배너 크기 설정 */
+.banner-slider {
+    height: 150px;
+    /* 모바일 기본 높이 */
+}
+
+@media (min-width: 640px) {
+    .banner-slider {
+        height: 180px;
+        /* sm */
+    }
+}
+
+@media (min-width: 768px) {
+    .banner-slider {
+        height: 220px;
+        /* md */
+    }
+}
+
+@media (min-width: 1024px) {
+    .banner-slider {
+        height: 250px;
+        /* lg */
+    }
+}
+
+@media (min-width: 1280px) {
+    .banner-slider {
+        height: 280px;
+        /* xl */
+    }
+}
+
+/* 배너 이미지 스타일링 */
+.banner-slider img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    border-radius: 8px;
+}
+
+/* 슬라이더 컨트롤 스타일링 */
+.banner-container .slick-dots {
+    bottom: 12px;
+    z-index: 10;
+}
+
+.banner-container .slick-dots li {
+    margin: 0 2px;
+}
+
+.banner-container .slick-dots li button {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.5);
+    border: none;
+    transition: all 0.3s ease;
+}
+
+.banner-container .slick-dots li.slick-active button {
+    background: #ffffff;
+    transform: scale(1.2);
+}
+
+@media (min-width: 640px) {
+    .banner-container .slick-dots li button {
+        width: 10px;
+        height: 10px;
+    }
+}
+
+@media (min-width: 768px) {
+    .banner-container .slick-dots li button {
+        width: 12px;
+        height: 12px;
+    }
+}
+
+/* 로딩 상태 */
+.banner-loading {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 150px;
+    background: #f3f4f6;
+    border-radius: 8px;
+    margin: 1rem 0;
+}
+
+@media (min-width: 640px) {
+    .banner-loading {
+        height: 180px;
+    }
+}
+
+@media (min-width: 768px) {
+    .banner-loading {
+        height: 220px;
+    }
+}
+
+@media (min-width: 1024px) {
+    .banner-loading {
+        height: 250px;
+    }
+}
+
+/* 빈 상태 */
+.banner-empty {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 150px;
+    background: #f9fafb;
+    border: 2px dashed #d1d5db;
+    border-radius: 8px;
+    color: #6b7280;
+    margin: 1rem 0;
+}
+
+@media (min-width: 640px) {
+    .banner-empty {
+        height: 180px;
+    }
+}
+
+@media (min-width: 768px) {
+    .banner-empty {
+        height: 220px;
+    }
+}
+
+@media (min-width: 1024px) {
+    .banner-empty {
+        height: 250px;
+    }
+}
+
+/* 호버 효과 */
+.banner-container:hover {
+    transform: scale(1.01);
+    transition: transform 0.3s ease;
+}
+
+/* 슬라이더 애니메이션 */
+.banner-container .slick-slide {
+    transition: all 0.3s ease;
+}
+
+.banner-container .slick-slide.slick-active {
+    transform: scale(1.02);
+}
+
+/* 반응형 텍스트 */
+.banner-loading .text-sm,
+.banner-empty .text-sm {
+    font-size: 0.875rem;
+}
+
+@media (min-width: 640px) {
+
+    .banner-loading .text-sm,
+    .banner-empty .text-sm {
+        font-size: 1rem;
+    }
+}
+
+@media (min-width: 768px) {
+
+    .banner-loading .text-sm,
+    .banner-empty .text-sm {
+        font-size: 1.125rem;
+    }
+}
+
+/* 슬라이더 화살표 숨기기 */
+.banner-container .slick-prev,
+.banner-container .slick-next {
+    display: none !important;
+}
+
+/* 모바일에서 더 나은 터치 경험 */
+@media (max-width: 640px) {
+    .banner-container {
+        touch-action: pan-y pinch-zoom;
+    }
+}

@@ -1,0 +1,367 @@
+{
+  "rooms": [
+    {
+      "id": 1,
+      "user_id": 4,
+      "admin_id": null,
+      "guest_id": null,
+      "status": "active",
+      "created_at": "2025-05-21T08:51:40.000Z",
+      "last_message_at": "2025-07-20T07:46:16.000Z",
+      "is_archived": 0
+    }
+  ],
+  "messages": [
+    {
+      "id": 1,
+      "room_id": 1,
+      "sender_type": "user",
+      "sender_id": "4",
+      "message": "22",
+      "is_read": 1,
+      "created_at": "2025-05-23T02:38:30.000Z"
+    },
+    {
+      "id": 2,
+      "room_id": 1,
+      "sender_type": "user",
+      "sender_id": "4",
+      "message": "바보년 ",
+      "is_read": 1,
+      "created_at": "2025-05-23T02:42:15.000Z"
+    },
+    {
+      "id": 3,
+      "room_id": 1,
+      "sender_type": "user",
+      "sender_id": "4",
+      "message": "12",
+      "is_read": 1,
+      "created_at": "2025-05-23T02:59:18.000Z"
+    },
+    {
+      "id": 4,
+      "room_id": 1,
+      "sender_type": "user",
+      "sender_id": "4",
+      "message": "테스트",
+      "is_read": 1,
+      "created_at": "2025-05-23T03:00:06.000Z"
+    },
+    {
+      "id": 5,
+      "room_id": 1,
+      "sender_type": "user",
+      "sender_id": "4",
+      "message": "2222",
+      "is_read": 1,
+      "created_at": "2025-05-23T03:19:31.000Z"
+    },
+    {
+      "id": 6,
+      "room_id": 1,
+      "sender_type": "user",
+      "sender_id": "4",
+      "message": "12123123",
+      "is_read": 1,
+      "created_at": "2025-05-23T03:19:34.000Z"
+    },
+    {
+      "id": 21,
+      "room_id": 1,
+      "sender_type": "user",
+      "sender_id": "4",
+      "message": "22",
+      "is_read": 1,
+      "created_at": "2025-05-23T07:55:50.000Z"
+    },
+    {
+      "id": 24,
+      "room_id": 1,
+      "sender_type": "admin",
+      "sender_id": "1",
+      "message": "123213123",
+      "is_read": 1,
+      "created_at": "2025-05-23T08:22:01.000Z"
+    },
+    {
+      "id": 25,
+      "room_id": 1,
+      "sender_type": "admin",
+      "sender_id": "4",
+      "message": "222",
+      "is_read": 1,
+      "created_at": "2025-05-23T08:23:30.000Z"
+    },
+    {
+      "id": 26,
+      "room_id": 1,
+      "sender_type": "user",
+      "sender_id": "4",
+      "message": "11",
+      "is_read": 1,
+      "created_at": "2025-05-23T08:57:35.000Z"
+    },
+    {
+      "id": 27,
+      "room_id": 1,
+      "sender_type": "admin",
+      "sender_id": "4",
+      "message": "22",
+      "is_read": 1,
+      "created_at": "2025-05-23T08:58:03.000Z"
+    },
+    {
+      "id": 28,
+      "room_id": 1,
+      "sender_type": "user",
+      "sender_id": "4",
+      "message": "12312",
+      "is_read": 1,
+      "created_at": "2025-05-23T09:07:44.000Z"
+    },
+    {
+      "id": 29,
+      "room_id": 1,
+      "sender_type": "admin",
+      "sender_id": "4",
+      "message": "111",
+      "is_read": 1,
+      "created_at": "2025-05-23T09:16:17.000Z"
+    },
+    {
+      "id": 31,
+      "room_id": 1,
+      "sender_type": "admin",
+      "sender_id": "1",
+      "message": "ㅋㅋㅋ",
+      "is_read": 1,
+      "created_at": "2025-07-20T07:20:49.000Z"
+    },
+    {
+      "id": 32,
+      "room_id": 1,
+      "sender_type": "user",
+      "sender_id": "4",
+      "message": "zz",
+      "is_read": 1,
+      "created_at": "2025-07-20T07:21:10.000Z"
+    },
+    {
+      "id": 33,
+      "room_id": 1,
+      "sender_type": "admin",
+      "sender_id": "4",
+      "message": "zzzzzzzzzzzz",
+      "is_read": 1,
+      "created_at": "2025-07-20T07:26:24.000Z"
+    },
+    {
+      "id": 34,
+      "room_id": 1,
+      "sender_type": "user",
+      "sender_id": "4",
+      "message": "zzz",
+      "is_read": 1,
+      "created_at": "2025-07-20T07:26:34.000Z"
+    },
+    {
+      "id": 35,
+      "room_id": 1,
+      "sender_type": "admin",
+      "sender_id": "4",
+      "message": "zzzzzz2313",
+      "is_read": 1,
+      "created_at": "2025-07-20T07:28:37.000Z"
+    },
+    {
+      "id": 36,
+      "room_id": 1,
+      "sender_type": "admin",
+      "sender_id": "4",
+      "message": "123123",
+      "is_read": 1,
+      "created_at": "2025-07-20T07:30:22.000Z"
+    },
+    {
+      "id": 37,
+      "room_id": 1,
+      "sender_type": "admin",
+      "sender_id": "4",
+      "message": "zzz",
+      "is_read": 1,
+      "created_at": "2025-07-20T07:30:34.000Z"
+    },
+    {
+      "id": 38,
+      "room_id": 1,
+      "sender_type": "admin",
+      "sender_id": "4",
+      "message": "213123",
+      "is_read": 1,
+      "created_at": "2025-07-20T07:32:21.000Z"
+    },
+    {
+      "id": 39,
+      "room_id": 1,
+      "sender_type": "admin",
+      "sender_id": "4",
+      "message": "2222",
+      "is_read": 1,
+      "created_at": "2025-07-20T07:32:39.000Z"
+    },
+    {
+      "id": 40,
+      "room_id": 1,
+      "sender_type": "admin",
+      "sender_id": "4",
+      "message": "222",
+      "is_read": 1,
+      "created_at": "2025-07-20T07:34:02.000Z"
+    },
+    {
+      "id": 41,
+      "room_id": 1,
+      "sender_type": "user",
+      "sender_id": "4",
+      "message": "zzz",
+      "is_read": 1,
+      "created_at": "2025-07-20T07:34:12.000Z"
+    },
+    {
+      "id": 42,
+      "room_id": 1,
+      "sender_type": "admin",
+      "sender_id": "4",
+      "message": "23141",
+      "is_read": 1,
+      "created_at": "2025-07-20T07:34:17.000Z"
+    },
+    {
+      "id": 43,
+      "room_id": 1,
+      "sender_type": "admin",
+      "sender_id": "4",
+      "message": "2222",
+      "is_read": 1,
+      "created_at": "2025-07-20T07:34:34.000Z"
+    },
+    {
+      "id": 44,
+      "room_id": 1,
+      "sender_type": "admin",
+      "sender_id": "4",
+      "message": "zzz",
+      "is_read": 1,
+      "created_at": "2025-07-20T07:35:44.000Z"
+    },
+    {
+      "id": 45,
+      "room_id": 1,
+      "sender_type": "admin",
+      "sender_id": "4",
+      "message": "222",
+      "is_read": 1,
+      "created_at": "2025-07-20T07:38:46.000Z"
+    },
+    {
+      "id": 46,
+      "room_id": 1,
+      "sender_type": "admin",
+      "sender_id": "4",
+      "message": "123123",
+      "is_read": 1,
+      "created_at": "2025-07-20T07:39:34.000Z"
+    },
+    {
+      "id": 47,
+      "room_id": 1,
+      "sender_type": "admin",
+      "sender_id": "4",
+      "message": "222",
+      "is_read": 1,
+      "created_at": "2025-07-20T07:40:09.000Z"
+    },
+    {
+      "id": 48,
+      "room_id": 1,
+      "sender_type": "admin",
+      "sender_id": "4",
+      "message": "안녕",
+      "is_read": 1,
+      "created_at": "2025-07-20T07:43:07.000Z"
+    },
+    {
+      "id": 49,
+      "room_id": 1,
+      "sender_type": "admin",
+      "sender_id": "4",
+      "message": "222",
+      "is_read": 1,
+      "created_at": "2025-07-20T07:43:29.000Z"
+    },
+    {
+      "id": 50,
+      "room_id": 1,
+      "sender_type": "user",
+      "sender_id": "4",
+      "message": "222",
+      "is_read": 1,
+      "created_at": "2025-07-20T07:43:39.000Z"
+    },
+    {
+      "id": 51,
+      "room_id": 1,
+      "sender_type": "admin",
+      "sender_id": "4",
+      "message": "ㄴㄴ",
+      "is_read": 1,
+      "created_at": "2025-07-20T07:43:47.000Z"
+    },
+    {
+      "id": 52,
+      "room_id": 1,
+      "sender_type": "user",
+      "sender_id": "4",
+      "message": "2212",
+      "is_read": 1,
+      "created_at": "2025-07-20T07:43:52.000Z"
+    },
+    {
+      "id": 53,
+      "room_id": 1,
+      "sender_type": "user",
+      "sender_id": "4",
+      "message": "222",
+      "is_read": 1,
+      "created_at": "2025-07-20T07:44:02.000Z"
+    },
+    {
+      "id": 54,
+      "room_id": 1,
+      "sender_type": "user",
+      "sender_id": "4",
+      "message": "22",
+      "is_read": 1,
+      "created_at": "2025-07-20T07:46:04.000Z"
+    },
+    {
+      "id": 55,
+      "room_id": 1,
+      "sender_type": "admin",
+      "sender_id": "4",
+      "message": "111",
+      "is_read": 1,
+      "created_at": "2025-07-20T07:46:10.000Z"
+    },
+    {
+      "id": 56,
+      "room_id": 1,
+      "sender_type": "admin",
+      "sender_id": "4",
+      "message": "222",
+      "is_read": 1,
+      "created_at": "2025-07-20T07:46:16.000Z"
+    }
+  ]
+}

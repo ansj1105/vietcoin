@@ -1,21 +1,17 @@
 import React, { useEffect, useState } from 'react';
-import Slider from 'react-slick';
-import "slick-carousel/slick/slick.css";
-import "slick-carousel/slick/slick-theme.css";
 import axios from 'axios';
-import VideoWithPreview from './VideoWithPreview';
+import ContentListBanner from './ContentListBanner';
+import ContentListVideo from './ContentListVideo';
 import AdvancedLoadingSpinner from './AdvancedLoadingSpinner';
 import '../styles/MainLanding.css';
 
 const ContentList = React.memo(() => {
-  // 컴포넌트 최상단에
   const API_HOST = import.meta.env.VITE_API_BASE_URL || 'http://localhost:4000';
 
   const [banners, setBanners] = useState([]);
   const [video, setVideo] = useState(null);
   const [loading, setLoading] = useState(true);
-  // ← 현재 슬라이드 인덱스
-  const [currentSlide, setCurrentSlide] = useState(0);
+
   useEffect(() => {
     const fetchContent = async () => {
       try {
@@ -45,59 +41,19 @@ const ContentList = React.memo(() => {
   const noContent = banners.length === 0 && !video;
 
   return (
-    <div className="content-wrapper">
+    <div className="content-wrapper w-full max-w-full px-2 sm:px-4 md:px-6 lg:px-8">
       {noContent ? (
-        <p className="text-gray-400">업로드된 파일이 없습니다.</p>
+        <div className="text-center py-8">
+          <p className="text-gray-400 text-sm sm:text-base">업로드된 파일이 없습니다.</p>
+        </div>
       ) : (
-        <>
-          {/* 배너 슬라이더: h-[170px] 컨테이너 안에서 이미지를 object-cover */}
-          {banners.length > 0 && (
-            <div className="relative w-full h-[170px] rounded overflow-visible">
-              <Slider
-                dots
-                infinite
-                autoplay
-                autoplaySpeed={3000}
-                // ← 슬라이드가 바뀔 때마다 호출
-                afterChange={idx => setCurrentSlide(idx)}
-                // ← 각 dot 렌더링
-                customPaging={i => (
-                  <div
-                    className={`w-2 h-2 rounded-full ${currentSlide === i ? 'bg-white' : 'bg-gray-400'
-                      }`}
-                  />
-                )}
-                // ← dots를 이미지 위에 절대 위치
-                appendDots={dots => (
-                  <div>
-                    <ul className="absolute bottom-6 left-0 right-0 flex justify-center space-x-0">
-                      {dots}
-                    </ul>
-                  </div>
-                )}
-              >
-                {banners.map((banner, idx) => (
-                  <div key={idx} className="h-[170px] overflow-hidden rounded">
-                    <img
-                      src={`${API_HOST}${banner.file_path}`}
-                      alt={`banner-${idx}`}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                ))}
-              </Slider>
-            </div>
-          )}
+        <div className="space-y-4 sm:space-y-6">
+          {/* 배너 컴포넌트 */}
+          <ContentListBanner banners={banners} API_HOST={API_HOST} />
 
-          {/* 동영상: VideoWithPreview 컴포넌트 사용 */}
-          {video && (
-            <div className="w-full aspect-video">
-              <VideoWithPreview
-                src={`${API_HOST}${video}`}
-              />
-            </div>
-          )}
-        </>
+          {/* 비디오 컴포넌트 */}
+          <ContentListVideo video={video} API_HOST={API_HOST} />
+        </div>
       )}
     </div>
   );

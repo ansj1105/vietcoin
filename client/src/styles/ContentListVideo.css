@@ -1,0 +1,181 @@
+/* ContentListVideo 반응형 스타일 */
+
+.video-container {
+    width: 100%;
+    position: relative;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+/* 반응형 비디오 크기 설정 */
+.video-container {
+    aspect-ratio: 16 / 9;
+    /* 기본 16:9 비율 */
+    max-height: 300px;
+    /* 모바일 기본 높이 제한 */
+}
+
+@media (min-width: 640px) {
+    .video-container {
+        max-height: 400px;
+        /* sm */
+    }
+}
+
+@media (min-width: 768px) {
+    .video-container {
+        max-height: 500px;
+        /* md */
+    }
+}
+
+@media (min-width: 1024px) {
+    .video-container {
+        max-height: 600px;
+        /* lg */
+    }
+}
+
+@media (min-width: 1280px) {
+    .video-container {
+        max-height: 700px;
+        /* xl */
+    }
+}
+
+/* 비디오 내부 요소 스타일링 */
+.video-container video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 8px;
+}
+
+/* 비디오 오버레이 스타일 */
+.video-container .absolute {
+    border-radius: 8px;
+}
+
+/* 로딩 상태 */
+.video-loading {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 200px;
+    background: #f3f4f6;
+    border-radius: 8px;
+    margin: 1rem 0;
+}
+
+@media (min-width: 640px) {
+    .video-loading {
+        height: 250px;
+    }
+}
+
+@media (min-width: 768px) {
+    .video-loading {
+        height: 300px;
+    }
+}
+
+@media (min-width: 1024px) {
+    .video-loading {
+        height: 350px;
+    }
+}
+
+/* 빈 상태 */
+.video-empty {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 200px;
+    background: #f9fafb;
+    border: 2px dashed #d1d5db;
+    border-radius: 8px;
+    color: #6b7280;
+    margin: 1rem 0;
+}
+
+@media (min-width: 640px) {
+    .video-empty {
+        height: 250px;
+    }
+}
+
+@media (min-width: 768px) {
+    .video-empty {
+        height: 300px;
+    }
+}
+
+@media (min-width: 1024px) {
+    .video-empty {
+        height: 350px;
+    }
+}
+
+/* 비디오 컨트롤 최적화 */
+.video-container video::-webkit-media-controls {
+    border-radius: 8px;
+}
+
+.video-container video::-webkit-media-controls-panel {
+    background: rgba(0, 0, 0, 0.7);
+}
+
+/* 호버 효과 (선택사항) */
+.video-container:hover {
+    transform: scale(1.02);
+    transition: transform 0.3s ease;
+}
+
+/* 비디오 재생 버튼 스타일링 */
+.video-container .w-16.h-16 {
+    width: 3rem;
+    height: 3rem;
+}
+
+@media (min-width: 640px) {
+    .video-container .w-16.h-16 {
+        width: 4rem;
+        height: 4rem;
+    }
+}
+
+@media (min-width: 768px) {
+    .video-container .w-16.h-16 {
+        width: 5rem;
+        height: 5rem;
+    }
+}
+
+/* 비디오 오버레이 배경 */
+.video-container .bg-black.bg-opacity-50 {
+    background-color: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(2px);
+}
+
+/* 반응형 텍스트 */
+.video-loading .text-sm,
+.video-empty .text-sm {
+    font-size: 0.875rem;
+}
+
+@media (min-width: 640px) {
+
+    .video-loading .text-sm,
+    .video-empty .text-sm {
+        font-size: 1rem;
+    }
+}
+
+@media (min-width: 768px) {
+
+    .video-loading .text-sm,
+    .video-empty .text-sm {
+        font-size: 1.125rem;
+    }
+}

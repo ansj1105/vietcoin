@@ -91,7 +91,6 @@
 }
 
 .r-box1 {
-
   top: 0;
   left: 50%;
   width: 100%;
@@ -112,27 +111,26 @@
 
 /* 로그인 로고 */
 .login-logo-r {
-  width: 180px;
-  height: 70px;
-  padding-bottom: 2.5px;
+  width: 160px;
+  height: 60px;
+  padding-bottom: 2px;
   margin-top: 55px;
-
+  margin-bottom: 20px;
 }
-
 
 /* 하단 섹션 */
 .v-token-r {
-  min-height: 55px;
+  min-height: 45px;
   /* ✅ 최소 높이 고정 */
   width: 90%;
-  height: 55px;
-  margin-top: 6px;
-  margin-top: 10px;
+  height: 45px;
+  margin-top: 8px;
+  margin-bottom: 4px;
   display: flex;
   flex-direction: row;
   align-items: center;
   justify-content: center;
-  padding: 5px;
+  padding: 4px 12px;
   background: #191c29;
   border-radius: 13px;
   cursor: pointer;
@@ -146,8 +144,6 @@
   /* 왼쪽에서 16px 만큼 떨어지게 */
   flex-shrink: 0;
   /* ✅ 크기 줄어드는 것 방지 */
-
-
 }
 
 .v-token-r::placeholder {
@@ -155,26 +151,21 @@
   /* 글자 색상 */
   font-size: 14px;
   /* 글자 크기 */
-
-
 }
-
-
-
 
 /* 하단 섹션 */
 .v-token-r-ex {
-  min-height: 55px;
+  min-height: 45px;
   /* ✅ 최소 높이 고정 */
   width: 90%;
-  height: 55px;
-  margin-top: 10px;
-  margin-bottom: 12px;
+  height: 45px;
+  margin-top: 8px;
+  margin-bottom: 8px;
   display: flex;
   flex-direction: row;
   align-items: center;
   justify-content: center;
-  padding: 5px;
+  padding: 4px 12px;
   background: #191c29;
   border-radius: 13px;
   cursor: pointer;
@@ -188,8 +179,6 @@
   /* 왼쪽에서 16px 만큼 떨어지게 */
   flex-shrink: 0;
   /* ✅ 크기 줄어드는 것 방지 */
-
-
 }
 
 .v-token-r-ex::placeholder {
@@ -197,17 +186,9 @@
   /* 글자 색상 */
   font-size: 14px;
   /* 글자 크기 */
-
-
 }
 
-
-
-
-
-
 .v-token-r-m {
-
   width: 90%;
   height: 35px;
   margin-top: 5px;
@@ -215,16 +196,13 @@
   flex-direction: row;
   align-items: center;
   justify-content: center;
-  padding: 5px;
+  padding: 4px;
   background: rgb(55, 119, 115);
   border-radius: 3px;
   color: #ffffff;
   transition: all 0.4s ease;
   /* 부드럽게 전환 */
   box-shadow: 0 0 2px 2px #b8dfd9 !important;
-
-
-
 }
 
 .v-token-r-m:hover {
@@ -232,26 +210,16 @@
   /* 조금 더 밝은 노란색으로 hover 효과 */
 }
 
-
-
-
-
-
-
-
-
-
 .v-token-r0 {
-
   width: 45%;
-  height: 55px;
-  margin-top: 10px;
-  margin-bottom: 5px;
+  height: 45px;
+  margin-top: 8px;
+  margin-bottom: 4px;
   display: flex;
   flex-direction: row;
   align-items: center;
   justify-content: left;
-  padding: 5px;
+  padding: 4px 12px;
   background: #191c29;
   border-radius: 13px;
   cursor: pointer;
@@ -263,8 +231,6 @@
   box-shadow: 0 0 12px 2px #b8dfd9 !important;
   padding-left: 16px;
   /* 왼쪽에서 16px 만큼 떨어지게 */
-
-
 }
 
 .v-token-r0::placeholder {
@@ -272,23 +238,18 @@
   /* 글자 색상 */
   font-size: 14px;
   /* 글자 크기 */
-
-
 }
 
-
-
 .v-token-r00 {
-
   width: 90%;
-  height: 55px;
-  margin-top: 10px;
-  margin-bottom: 5px;
+  height: 45px;
+  margin-top: 8px;
+  margin-bottom: 4px;
   display: flex;
   flex-direction: row;
   align-items: center;
   justify-content: center;
-  padding: 5px;
+  padding: 4px 12px;
   background: #191c29;
   border-radius: 13px;
   cursor: pointer;
@@ -300,8 +261,6 @@
   box-shadow: 0 0 12px 2px #b8dfd9 !important;
   padding-left: 16px;
   /* 왼쪽에서 16px 만큼 떨어지게 */
-
-
 }
 
 .v-token-r00::placeholder {
@@ -309,10 +268,7 @@
   /* 글자 색상 */
   font-size: 14px;
   /* 글자 크기 */
-
-
 }
-
 
 .flex01 {
   width: 84%;
@@ -320,16 +276,13 @@
   /* ✅ Flexbox 적용 */
   z-index: 100;
   margin-bottom: 8px;
-
 }
-
 
 .flex0 {
   width: 84%;
   display: flex;
   /* ✅ Flexbox 적용 */
   z-index: 100;
-
 }
 
 .flex1 {
@@ -337,22 +290,18 @@
   display: flex;
   /* ✅ Flexbox 적용 */
   z-index: 100;
-
 }
 
-
-
 .v-token-r1 {
-
   width: 100%;
-  height: 55px;
-  margin-top: 10px;
+  height: 45px;
+  margin-top: 8px;
   margin-bottom: 0px;
   display: flex;
   flex-direction: row;
   align-items: center;
   justify-content: right !important;
-  padding: 5px;
+  padding: 4px 12px;
   background: #191c29;
   border-radius: 13px;
   cursor: pointer;
@@ -364,8 +313,6 @@
   box-shadow: 0 0 12px 2px #b8dfd9 !important;
   padding-left: 16px;
   /* 왼쪽에서 16px 만큼 떨어지게 */
-
-
 }
 
 .v-token-r1::placeholder {
@@ -373,26 +320,21 @@
   /* 글자 색상 */
   font-size: 14px;
   /* 글자 크기 */
-
-
-
 }
 
 .v-token-r11 {
-
   width: 100%;
-  height: 55px;
-  margin-top: 10px;
-  margin-bottom: 5px;
+  height: 45px;
+  margin-top: 8px;
+  margin-bottom: 4px;
   display: flex;
   flex-direction: row;
   align-items: center;
   justify-content: right !important;
-  padding: 5px;
+  padding: 4px 12px;
   background: #191c29;
   border-radius: 13px;
   cursor: pointer;
-
   gap: 12px;
   color: #26ffe6;
   transition: all 0.4s ease;
@@ -401,7 +343,6 @@
   box-shadow: 0 0 12px 2px #b8dfd9 !important;
   padding-left: 16px;
   /* 왼쪽에서 16px 만큼 떨어지게 */
-
 }
 
 .v-token-r11::placeholder {
@@ -409,22 +350,18 @@
   /* 글자 색상 */
   font-size: 14px;
   /* 글자 크기 */
-
-
 }
 
-
 .v-token-r2 {
-
   width: 200%;
-  height: 55px;
-  margin-top: 10px;
+  height: 45px;
+  margin-top: 8px;
   margin-bottom: 0px;
   display: flex;
   flex-direction: row;
   align-items: center;
   justify-content: center;
-  padding: 5px;
+  padding: 4px 12px;
   background: #191c29;
   border-radius: 13px;
   cursor: pointer;
@@ -436,7 +373,6 @@
   box-shadow: 0 0 12px 2px #b8dfd9 !important;
   padding-left: 16px;
   /* 왼쪽에서 16px 만큼 떨어지게 */
-
 }
 
 .v-token-r2::placeholder {
@@ -444,23 +380,21 @@
   /* 글자 색상 */
   font-size: 14px;
   /* 글자 크기 */
-
-
 }
 
 /* 하단 섹션 */
 .v-token-r-rr {
-  min-height: 55px;
+  min-height: 45px;
   /* ✅ 최소 높이 고정 */
   width: 90%;
-  height: 55px;
-  margin-top: 10px;
-  margin-bottom: 15px;
+  height: 45px;
+  margin-top: 8px;
+  margin-bottom: 10px;
   display: flex;
   flex-direction: row;
   align-items: center;
   justify-content: center;
-  padding: 5px;
+  padding: 4px 12px;
   background: #191c29;
   border-radius: 13px;
   cursor: pointer;
@@ -474,22 +408,20 @@
   /* 왼쪽에서 16px 만큼 떨어지게 */
   flex-shrink: 0;
   /* ✅ 크기 줄어드는 것 방지 */
-
-
 }
 
 .v-token-r-p {
-  min-height: 55px;
+  min-height: 45px;
   /* ✅ 최소 높이 고정 */
   width: 90%;
-  height: 55px;
-  margin-top: 5px;
-  margin-bottom: 5px !important;
+  height: 45px;
+  margin-top: 4px;
+  margin-bottom: 4px !important;
   display: flex;
   flex-direction: row;
   align-items: center;
   justify-content: center;
-  padding: 5px;
+  padding: 4px 12px;
   background: #191c29;
   border-radius: 13px;
   cursor: pointer;
@@ -895,4 +827,167 @@
   }
 
 
+}
+
+/* 768px 이하 화면에서 반응형 적용 */
+@media screen and (max-width: 768px) {
+
+  .page-wrapper-r,
+  .r-box {
+    width: 100%;
+    max-width: 500px;
+    padding: 0 12px;
+  }
+
+  .login-logo-r {
+    width: 140px;
+    height: 55px;
+    margin-top: 45px;
+    margin-bottom: 15px;
+  }
+
+  .v-token-r,
+  .v-token-r-ex,
+  .v-token-r0,
+  .v-token-r00,
+  .v-token-r1,
+  .v-token-r11,
+  .v-token-r2,
+  .v-token-r-rr,
+  .v-token-r-p {
+    width: 90%;
+    font-size: 14px;
+    min-height: 40px;
+    height: 40px;
+    margin-top: 6px;
+    margin-bottom: 3px;
+    padding: 3px 10px;
+  }
+
+  .v-token-r-m {
+    height: 30px;
+    padding: 3px;
+  }
+
+  .auth-links-r {
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+    font-size: 13px;
+  }
+
+  .auth-links-r span {
+    color: #ffffff;
+  }
+
+  .auth-links-r a {
+    text-decoration: none;
+    color: #26ffe6;
+    transition: color 0.3s, text-decoration 0.3s;
+    margin-left: 0;
+    margin-left: 8px;
+  }
+
+  .auth-links-r a:hover {
+    text-decoration: underline;
+    color: #ffd54f;
+  }
+}
+
+/* 350px 이하 화면에서 추가 최적화 */
+@media screen and (max-width: 350px) {
+  .login-logo-r {
+    width: 120px;
+    height: 45px;
+    margin-top: 40px;
+    margin-bottom: 12px;
+  }
+
+  .v-token-r,
+  .v-token-r-ex,
+  .v-token-r0,
+  .v-token-r00,
+  .v-token-r1,
+  .v-token-r11,
+  .v-token-r2,
+  .v-token-r-rr,
+  .v-token-r-p {
+    min-height: 35px;
+    height: 35px;
+    margin-top: 5px;
+    margin-bottom: 2px;
+    padding: 2px 8px;
+    font-size: 13px;
+  }
+
+  .v-token-r-m {
+    height: 28px;
+    padding: 2px;
+    font-size: 12px;
+  }
+
+  .auth-links-r {
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+  }
+
+  .auth-links-r span {
+    margin-bottom: 2px;
+  }
+
+  .auth-links-r a {
+    margin-left: 0;
+    font-size: 11px;
+  }
+}
+
+/* 600px 이하 높이에서 추가 최적화 */
+@media screen and (max-height: 600px) {
+  .r-box {
+    justify-content: flex-start;
+    padding: 0 12px;
+  }
+
+  .login-logo-r {
+    width: 120px;
+    height: 45px;
+    margin-top: 40px;
+    margin-bottom: 10px;
+  }
+
+  .v-token-r,
+  .v-token-r-ex,
+  .v-token-r0,
+  .v-token-r00,
+  .v-token-r1,
+  .v-token-r11,
+  .v-token-r2,
+  .v-token-r-rr,
+  .v-token-r-p {
+    min-height: 35px;
+    height: 35px;
+    margin-top: 4px;
+    margin-bottom: 2px;
+    padding: 2px 8px;
+    font-size: 13px;
+  }
+
+  .v-token-r-m {
+    height: 28px;
+    padding: 2px;
+    font-size: 12px;
+  }
+
+  .auth-links-r {
+    gap: 4px;
+    font-size: 11px;
+  }
+
+  .auth-links-r a {
+    font-size: 11px;
+  }
 }
