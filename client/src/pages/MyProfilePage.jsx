@@ -9,7 +9,14 @@ import {
   RefreshCw,
   ArrowDownCircle,
   FileText,
-  LogOut
+  LogOut,
+  Trophy,
+  HelpCircle,
+  Shield,
+  TrendingUp,
+  Globe,
+  Building2,
+  Download
 } from 'lucide-react';
 import AlertPopup from '../components/AlertPopup';
 import AdvancedLoadingSpinner from '../components/AdvancedLoadingSpinner';
@@ -331,13 +338,13 @@ export default function MyProfilePage() {
       {/* ── 메뉴 리스트 ───────────────────────────────────────── */}
       <div className="profile-menu-container">
         {[
-          { icon: '🏆', key: 'taskCenter', to: '/taskcenter' },
-          { icon: '❓', key: 'faq', to: '/commonproblem' },
-          { icon: '🔒', key: 'securityCenter', to: '/security' },
-          { icon: '📈', key: 'quantTutorial', to: '/quant-tutorial' },
-          { icon: '🌐', key: 'language', to: '/settings/language' },
-          { icon: '🏢', key: 'aboutCompany', to: '/company' },
-          { icon: '⬇️', key: 'downloadApp', to: '/download' }
+          { icon: <Trophy size={20} />, key: 'taskCenter', to: '/taskcenter' },
+          { icon: <HelpCircle size={20} />, key: 'faq', to: '/commonproblem' },
+          { icon: <Shield size={20} />, key: 'securityCenter', to: '/security' },
+          { icon: <TrendingUp size={20} />, key: 'quantTutorial', to: '/quant-tutorial' },
+          { icon: <Globe size={20} />, key: 'language', to: '/settings/language' },
+          { icon: <Building2 size={20} />, key: 'aboutCompany', to: '/company' },
+          { icon: <Download size={20} />, key: 'downloadApp', to: '/download' }
         ].map((item, i) => {
           const label = t(`profile.menu.${item.key}`);
           return (

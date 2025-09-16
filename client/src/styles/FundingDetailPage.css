@@ -6,7 +6,8 @@
   display: flex;
   flex-direction: column;
   background-color: #0e0e11;
-  overflow: auto; /* 스크롤 활성화 */
+  overflow: auto;
+  /* 스크롤 활성화 */
   max-width: 100%;
   overflow-x: hidden;
   box-sizing: border-box;
@@ -20,9 +21,11 @@
   position: relative;
   top: 0;
   left: 50%;
-  transform: translateX(-50%);   /* ✅ 가운데 정렬 */
+  transform: translateX(-50%);
+  /* ✅ 가운데 정렬 */
   width: 100%;
-  max-width: 500px;              /* ✅ container와 맞춤 */
+  max-width: 500px;
+  /* ✅ container와 맞춤 */
   height: 58.27px;
   background: #1d1d27;
   display: flex;
@@ -38,12 +41,18 @@
 .back-button {
   color: #ffffff;
   font-size: 30px !important;
-  font-weight: bold !important;              /* 글자 굵게 */
-  display: flex;                  /* 중앙 정렬을 위한 flex 사용 */
-  align-items: center;            /* 세로 가운데 정렬 */
-  justify-content: center;        /* 가로 가운데 정렬 */
-  height: 100%;                   /* 부모 요소 높이 기준 */
-  text-align: center;             /* 텍스트 중앙 정렬 (fallback) */
+  font-weight: bold !important;
+  /* 글자 굵게 */
+  display: flex;
+  /* 중앙 정렬을 위한 flex 사용 */
+  align-items: center;
+  /* 세로 가운데 정렬 */
+  justify-content: center;
+  /* 가로 가운데 정렬 */
+  height: 100%;
+  /* 부모 요소 높이 기준 */
+  text-align: center;
+  /* 텍스트 중앙 정렬 (fallback) */
 }
 
 .project-title {
@@ -53,9 +62,12 @@
   font-size: 20px;
   width: 100%;
   height: 40%;
-  align-items: center;            /* 세로 가운데 정렬 */
-  justify-content: center;        /* 가로 가운데 정렬 */
-  text-align: center;             /* 텍스트 중앙 정렬 (fallback) */
+  align-items: center;
+  /* 세로 가운데 정렬 */
+  justify-content: center;
+  /* 가로 가운데 정렬 */
+  text-align: center;
+  /* 텍스트 중앙 정렬 (fallback) */
   margin: 0;
 }
 
@@ -65,9 +77,10 @@
 
 
 .funding-top-bar2 {
-  max-height: 350px ;
+  max-height: 350px;
   margin-bottom: 400px !important;
-  padding-right: 8px;              /* 스크롤바와 내용 간 여백 */
+  padding-right: 8px;
+  /* 스크롤바와 내용 간 여백 */
   margin: 0 auto;
   width: 95%;
   color: #ffe695;
@@ -84,11 +97,12 @@
   height: 100%;
   max-height: 800px;
 }
- 
+
 .funding-top-bar3 {
-  max-height: 350px ;
+  max-height: 350px;
   margin-bottom: 400px !important;
-  padding-right: 8px;              /* 스크롤바와 내용 간 여백 */
+  padding-right: 8px;
+  /* 스크롤바와 내용 간 여백 */
   margin: 0 auto;
   width: 95%;
   color: #ffe695;
@@ -101,11 +115,12 @@
   align-items: center;
   box-shadow: 0 0 2px 2px #b8dfd9;
   margin-top: 5px;
-  margin-bottom: 12px !important;
+  margin-bottom: 100px !important;
   height: 100%;
   max-height: 800px;
   margin-top: 30px;
 }
+
 .project-info {
   margin-bottom: 2px;
 }
@@ -113,7 +128,8 @@
 .project-available {
   margin-top: 25px;
   margin-bottom: 1rem;
-  color: #86efac; /* text-green-300 */
+  color: #86efac;
+  /* text-green-300 */
 }
 
 
@@ -121,7 +137,8 @@
 
 .amount-input {
   width: 100%;
-  min-height: 55px;            /* ✅ 최소 높이 고정 */
+  min-height: 55px;
+  /* ✅ 최소 높이 고정 */
   margin-top: 10px;
   margin-bottom: 5px;
   display: flex;
@@ -138,23 +155,29 @@
   border: 1.1px solid #1ad3b7 !important;
   box-shadow: 0 0 12px 2px #b8dfd9 !important;
   text-align: center;
-  flex-shrink: 0;              /* ✅ 크기 줄어드는 것 방지 */
+  flex-shrink: 0;
+  /* ✅ 크기 줄어드는 것 방지 */
   margin-bottom: 20px;
 }
 
 .amount-input::placeholder {
-  color: #fcd34d; /* placeholder-yellow-500 */
+  color: #fcd34d;
+  /* placeholder-yellow-500 */
 }
 
 .amount-input::placeholder {
-  color: #ccc;               /* 글자 색상 */
-  font-size: 14px;           /* 글자 크기 */
-  text-align: center;        /* 가운데 정렬 */
+  color: #ccc;
+  /* 글자 색상 */
+  font-size: 14px;
+  /* 글자 크기 */
+  text-align: center;
+  /* 가운데 정렬 */
 
 }
 
 .error-text {
-  color: #f87171; /* text-red-400 */
+  color: #f87171;
+  /* text-red-400 */
   margin-bottom: 0.5rem;
   font-size: 0.875rem;
 }
@@ -162,21 +185,28 @@
 .subscribe-button {
   width: 100%;
   height: 50px;
-  border: 2px solid #FFD700; /* 노란색 테두리 */
-  color: #000000;            /* 텍스트 색상 */
-  padding: 12px 0;           /* 상하 패딩 */
-  border-radius: 8px;        /* 둥근 모서리 */
-  font-weight: bold !important; 
-  font-size: 17px;           /* ✅ 글자 크기 키움 */
+  border: 2px solid #FFD700;
+  /* 노란색 테두리 */
+  color: #000000;
+  /* 텍스트 색상 */
+  padding: 12px 0;
+  /* 상하 패딩 */
+  border-radius: 8px;
+  /* 둥근 모서리 */
+  font-weight: bold !important;
+  font-size: 17px;
+  /* ✅ 글자 크기 키움 */
   background-color: #FFD700;
   cursor: pointer;
   transition: all 0.3s ease;
 }
 
 .subscribe-button:hover {
-  background-color: #fff3af; /* 호버 시 배경색 변경 */
-  color: #000000;            /* 호버 시 텍스트 색상 변경 */
-  
+  background-color: #fff3af;
+  /* 호버 시 배경색 변경 */
+  color: #000000;
+  /* 호버 시 텍스트 색상 변경 */
+
 }
 
 
@@ -195,7 +225,8 @@
 
 
 .investor-title {
-  font-size: 1.125rem; /* text-lg */
+  font-size: 1.125rem;
+  /* text-lg */
   font-weight: bold;
   color: #ffffff;
   margin-bottom: 0.5rem;
@@ -203,27 +234,38 @@
 
 .no-investors {
   font-size: 0.875rem;
-  color: #9ca3af; /* gray-400 */
+  color: #9ca3af;
+  /* gray-400 */
 }
 
 .investor-list {
   list-style: none;
   padding-left: 0;
   font-size: 0.875rem;
+  max-height: 300px;
+  overflow-y: auto;
+  padding-right: 8px;
 }
 
 .investor-item {
-  border-bottom: 1px solid #374151; /* gray-700 */
+  border-bottom: 1px solid #374151;
+  /* gray-700 */
   padding-bottom: 0.25rem;
+  padding-top: 0.25rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.investor-item:last-child {
+  border-bottom: none;
 }
 
 
 
 
 @media (max-width: 768px) {
-  .funding-wrapper {
-
-  }
+  .funding-wrapper {}
 
   .funding-top-bar1 {
     height: 52px;
@@ -245,7 +287,7 @@
     padding: 12px;
     width: 90%;
     font-size: 14px;
-    margin-bottom: 16px !important;
+
     box-shadow: 0 0 2px 1px #b8dfd9;
   }
 
@@ -282,9 +324,12 @@
 
   .investor-list {
     font-size: 13px;
+    max-height: 250px;
   }
 
   .investor-item {
     padding-bottom: 6px;
+    padding-top: 6px;
+    gap: 6px;
   }
 }
