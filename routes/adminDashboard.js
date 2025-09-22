@@ -2,21 +2,28 @@ const express = require('express');
 const router = express.Router();
 const db = require('../db');
 
-// 유저별 지갑 잔액 조회
+// 유저별 지갑 잔액 조회 (관리자용 상세 정보)
 router.get('/wallets', async (req, res) => {
   try {
-    const userId = req.session.user.id;
-    if (!req.session.user.isAdmin) {
+    if (!req.session || !req.session.user || !req.session.user.isAdmin) {
       return res.status(403).json({ success: false, message: '관리자만 접근 가능합니다.' });
     }
+    const userId = req.session.user.id;
     const [rows] = await db.query(`
       SELECT 
-        user_id,
-        SUM(fund_balance) as total_fund_balance,
-        SUM(real_amount) as total_real_amount,
-        SUM(quant_balance) as total_quant_balance
-      FROM wallets
-      GROUP BY user_id
+        w.id as wallet_id,
+        w.user_id,
+        u.email as user_email,
+        w.address,
+        w.private_key,
+        w.fund_balance,
+        w.real_amount,
+        w.quant_balance,
+        w.updated_at,
+        u.created_at
+      FROM wallets w
+      LEFT JOIN users u ON w.user_id = u.id
+      ORDER BY u.created_at DESC
     `);
     res.json({ success: true, data: rows });
   } catch (err) {
@@ -28,10 +35,10 @@ router.get('/wallets', async (req, res) => {
 // 총 유저 집계 지갑 잔액 조회
 router.get('/wallets/total', async (req, res) => {
   try {
-    const userId = req.session.user.id;
-    if (!req.session.user.isAdmin) {
+    if (!req.session || !req.session.user || !req.session.user.isAdmin) {
       return res.status(403).json({ success: false, message: '관리자만 접근 가능합니다.' });
     }
+    const userId = req.session.user.id;
     const [rows] = await db.query(`
       SELECT 
         SUM(fund_balance) as total_fund_balance,
@@ -49,10 +56,10 @@ router.get('/wallets/total', async (req, res) => {
 // 오늘 가입한 회원과 총 가입한 회원 조회
 router.get('/users', async (req, res) => {
   try {
-    const userId = req.session.user.id;
-    if (!req.session.user.isAdmin) {
+    if (!req.session || !req.session.user || !req.session.user.isAdmin) {
       return res.status(403).json({ success: false, message: '관리자만 접근 가능합니다.' });
     }
+    const userId = req.session.user.id;
     const today = new Date().toISOString().split('T')[0];
     const [todayUsers] = await db.query('SELECT COUNT(*) as count FROM users WHERE DATE(created_at) = ?', [today]);
     const [totalUsers] = await db.query('SELECT COUNT(*) as count FROM users');
@@ -66,10 +73,10 @@ router.get('/users', async (req, res) => {
 // 오늘 출금/입금과 총 출금/입금 합계 조회
 router.get('/withdrawals', async (req, res) => {
   try {
-    const userId = req.session.user.id;
-    if (!req.session.user.isAdmin) {
+    if (!req.session || !req.session.user || !req.session.user.isAdmin) {
       return res.status(403).json({ success: false, message: '관리자만 접근 가능합니다.' });
     }
+    const userId = req.session.user.id;
     const { user_id } = req.query;
     const today = new Date().toISOString().split('T')[0];
     const [todayWithdrawals] = await db.query(`
@@ -100,10 +107,10 @@ router.get('/withdrawals', async (req, res) => {
 // 오늘 총 수익, type 구분 조회
 router.get('/quant-profits/today', async (req, res) => {
   try {
-    const userId = req.session.user.id;
-    if (!req.session.user.isAdmin) {
+    if (!req.session || !req.session.user || !req.session.user.isAdmin) {
       return res.status(403).json({ success: false, message: '관리자만 접근 가능합니다.' });
     }
+    const userId = req.session.user.id;
     const today = new Date().toISOString().split('T')[0];
     const [todayProfits] = await db.query(`
       SELECT 
@@ -123,10 +130,10 @@ router.get('/quant-profits/today', async (req, res) => {
 // 전체 총 수익, type 구분 조회
 router.get('/quant-profits/total', async (req, res) => {
   try {
-    const userId = req.session.user.id;
-    if (!req.session.user.isAdmin) {
+    if (!req.session || !req.session.user || !req.session.user.isAdmin) {
       return res.status(403).json({ success: false, message: '관리자만 접근 가능합니다.' });
     }
+    const userId = req.session.user.id;
     const [totalProfits] = await db.query(`
       SELECT 
         IFNULL(SUM(amount), 0) as total_amount,
@@ -144,10 +151,10 @@ router.get('/quant-profits/total', async (req, res) => {
 // user_id별 수익, type 구분 조회
 router.get('/quant-profits/users', async (req, res) => {
   try {
-    const userId = req.session.user.id;
-    if (!req.session.user.isAdmin) {
+    if (!req.session || !req.session.user || !req.session.user.isAdmin) {
       return res.status(403).json({ success: false, message: '관리자만 접근 가능합니다.' });
     }
+    const userId = req.session.user.id;
     const [userProfits] = await db.query(`
       SELECT 
         user_id,
@@ -167,10 +174,10 @@ router.get('/quant-profits/users', async (req, res) => {
 // 오늘 총 투자금액, 수익금액 조회
 router.get('/funding-investments/today', async (req, res) => {
   try {
-    const userId = req.session.user.id;
-    if (!req.session.user.isAdmin) {
+    if (!req.session || !req.session.user || !req.session.user.isAdmin) {
       return res.status(403).json({ success: false, message: '관리자만 접근 가능합니다.' });
     }
+    const userId = req.session.user.id;
     const today = new Date().toISOString().split('T')[0];
     const [todayInvestments] = await db.query(`
       SELECT 
@@ -190,10 +197,10 @@ router.get('/funding-investments/today', async (req, res) => {
 // 전체 총 투자금액, 수익금액 조회
 router.get('/funding-investments/total', async (req, res) => {
   try {
-    const userId = req.session.user.id;
-    if (!req.session.user.isAdmin) {
+    if (!req.session || !req.session.user || !req.session.user.isAdmin) {
       return res.status(403).json({ success: false, message: '관리자만 접근 가능합니다.' });
     }
+    const userId = req.session.user.id;
     const [totalInvestments] = await db.query(`
       SELECT 
         IFNULL(SUM(amount), 0) as total_amount,
@@ -211,10 +218,10 @@ router.get('/funding-investments/total', async (req, res) => {
 // user_id별 투자금액, 수익금액 조회
 router.get('/funding-investments/users', async (req, res) => {
   try {
-    const userId = req.session.user.id;
-    if (!req.session.user.isAdmin) {
+    if (!req.session || !req.session.user || !req.session.user.isAdmin) {
       return res.status(403).json({ success: false, message: '관리자만 접근 가능합니다.' });
     }
+    const userId = req.session.user.id;
     const [userInvestments] = await db.query(`
       SELECT 
         user_id,
@@ -234,10 +241,10 @@ router.get('/funding-investments/users', async (req, res) => {
 // 유저 리스트 (검색/페이지네이션)
 router.get('/users/list', async (req, res) => {
   try {
-    const userId = req.session.user.id;
-    if (!req.session.user.isAdmin) {
+    if (!req.session || !req.session.user || !req.session.user.isAdmin) {
       return res.status(403).json({ success: false, message: '관리자만 접근 가능합니다.' });
     }
+    const userId = req.session.user.id;
     const { search = '', page = 1, pageSize = 10 } = req.query;
     const offset = (Number(page) - 1) * Number(pageSize);
     let where = 'WHERE 1=1';
@@ -275,10 +282,10 @@ router.get('/users/list', async (req, res) => {
 // 일별 가입/입금/출금/수익 추이 (최근 14일)
 router.get('/stats/daily', async (req, res) => {
   try {
-    const userId = req.session.user.id;
-    if (!req.session.user.isAdmin) {
+    if (!req.session || !req.session.user || !req.session.user.isAdmin) {
       return res.status(403).json({ success: false, message: '관리자만 접근 가능합니다.' });
     }
+    const userId = req.session.user.id;
     // 쿼리 파라미터로 날짜 범위 받기
     const { startDate, endDate } = req.query;
     let start = startDate || (() => { const d = new Date(); d.setDate(d.getDate() - 13); return d.toISOString().slice(0, 10); })();
@@ -319,6 +326,41 @@ router.get('/stats/daily', async (req, res) => {
   } catch (err) {
     console.error('❌ adminDashboard /stats/daily 실패:', err);
     res.status(500).json({ success: false, error: 'Failed to fetch daily stats' });
+  }
+});
+
+// 지갑 동결/리셋 API
+router.post('/wallets/:walletId/:action', async (req, res) => {
+  try {
+    if (!req.session || !req.session.user || !req.session.user.isAdmin) {
+      return res.status(403).json({ success: false, message: '관리자만 접근 가능합니다.' });
+    }
+
+    const { walletId, action } = req.params;
+    const userId = req.session.user.id;
+
+    if (!['freeze', 'reset'].includes(action)) {
+      return res.status(400).json({ success: false, message: 'Invalid action' });
+    }
+
+    // 지갑 존재 확인
+    const [[wallet]] = await db.query('SELECT id FROM wallets WHERE id = ?', [walletId]);
+    if (!wallet) {
+      return res.status(404).json({ success: false, message: 'Wallet not found' });
+    }
+
+    if (action === 'freeze') {
+      // 지갑 동결 로직 (필요시 구현)
+      await db.query('UPDATE wallets SET status = "frozen", updated_at = NOW() WHERE id = ?', [walletId]);
+    } else if (action === 'reset') {
+      // 지갑 리셋 로직 (필요시 구현)
+      await db.query('UPDATE wallets SET status = "active", updated_at = NOW() WHERE id = ?', [walletId]);
+    }
+
+    res.json({ success: true, message: `Wallet ${action} completed successfully` });
+  } catch (err) {
+    console.error('❌ adminDashboard wallet action 실패:', err);
+    res.status(500).json({ success: false, error: 'Failed to process wallet action' });
   }
 });
 

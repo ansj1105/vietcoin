@@ -140,12 +140,12 @@ export default async ({ mode }) => {
       port: 5173,
       proxy: {
         '/api': {
-          target: env.VITE_API_HOST,      // now defined
+          target: 'http://localhost:4000',      // 백엔드 서버 주소
           changeOrigin: true,
           ws: false,
         },
         '/chat': {
-          target: env.VITE_WS_HOST,       // now defined
+          target: 'http://localhost:4000',       // 백엔드 서버 주소
           changeOrigin: true,
           ws: true,
         },

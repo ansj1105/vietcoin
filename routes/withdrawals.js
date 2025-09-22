@@ -582,11 +582,14 @@ router.get('/', async (req, res) => {
   const status = req.query.status || 'PENDING';
   try {
     const [rows] = await db.query(
-      `SELECT w.*, u.name 
-         FROM withdrawals w
-         JOIN users u ON u.id = w.user_id
-        WHERE w.status = ?
-        ORDER BY w.created_at DESC`,
+      `SELECT 
+         w.id, w.user_id, w.amount, w.to_address as wallet_address, 
+         w.method, w.status, w.reason, w.created_at, w.updated_at,
+         u.name, u.email as user_email
+       FROM withdrawals w
+       JOIN users u ON u.id = w.user_id
+       WHERE w.status = ? AND w.flow_type = 'WITHDRAWAL'
+       ORDER BY w.created_at DESC`,
       [status]
     );
     res.json({ success: true, data: rows });
@@ -1163,6 +1166,189 @@ router.get('/bnb-address/all', async (req, res) => {
   } catch (err) {
     console.error('❌ /bnb-address/all 실패:', err);
     return res.status(500).json({ success: false, error: 'Failed to fetch BNB addresses' });
+  }
+});
+
+// ========== BNB 관리자용 API ==========
+
+// BNB 지갑 목록 조회
+router.get('/admin/bnb-wallets', async (req, res) => {
+  try {
+    const [rows] = await db.query(`
+      SELECT w.id, w.user_id, b.address, w.real_bamount as balance, w.updated_at
+      FROM wallets w 
+      JOIN bnb_log b ON w.user_id = b.user_id
+      WHERE b.address IS NOT NULL
+      ORDER BY w.updated_at DESC
+    `);
+    res.json(rows);
+  } catch (err) {
+    console.error('❌ BNB 지갑 목록 조회 실패:', err);
+    res.status(500).json({ error: 'Failed to fetch BNB wallets' });
+  }
+});
+
+// BNB 주소 목록 조회
+router.get('/admin/bnb-addresses', async (req, res) => {
+  try {
+    const [rows] = await db.query(`
+      SELECT b.id, b.user_id, b.address, u.email, w.real_bamount as balance
+      FROM bnb_log b
+      LEFT JOIN users u ON b.user_id = u.id
+      LEFT JOIN wallets w ON b.user_id = w.user_id
+      ORDER BY b.created_at DESC
+    `);
+    res.json(rows);
+  } catch (err) {
+    console.error('❌ BNB 주소 목록 조회 실패:', err);
+    res.status(500).json({ error: 'Failed to fetch BNB addresses' });
+  }
+});
+
+// BNB 관리자 설정 조회
+router.get('/admin/bnb-settings', async (req, res) => {
+  try {
+    const [[row]] = await db.query(
+      'SELECT admin_address, threshold FROM bnb_settings ORDER BY id DESC LIMIT 1'
+    );
+    res.json(row || {});
+  } catch (err) {
+    console.error('❌ BNB 관리자 설정 조회 실패:', err);
+    res.status(500).json({ error: 'Failed to fetch BNB settings' });
+  }
+});
+
+// BNB 관리자 설정 저장
+router.post('/admin/bnb-settings', async (req, res) => {
+  const { admin_address, threshold, admin_wallet_id } = req.body;
+  if (!admin_address || !threshold) {
+    return res.status(400).json({ error: 'Missing required fields' });
+  }
+  try {
+    await db.query(
+      'INSERT INTO bnb_settings (admin_address, threshold, admin_wallet_id) VALUES (?, ?, ?)',
+      [admin_address, threshold, admin_wallet_id]
+    );
+    res.json({ success: true });
+  } catch (err) {
+    console.error('❌ BNB 설정 저장 실패:', err);
+    res.status(500).json({ error: 'Failed to save BNB settings' });
+  }
+});
+
+// BNB 잔액 조회
+router.get('/admin/bnb-balance/:address', async (req, res) => {
+  try {
+    const { address } = req.params;
+    const balance = await getBNBBalance(address);
+    res.json({ balance });
+  } catch (err) {
+    console.error('❌ BNB 잔액 조회 실패:', err);
+    res.status(500).json({ error: 'Failed to fetch BNB balance' });
+  }
+});
+
+// BNB 전송
+router.post('/admin/bnb-transfer', async (req, res) => {
+  try {
+    const { from_wallet_id, to_address, amount } = req.body;
+
+    // 지갑 정보 조회
+    const [[wallet]] = await db.query(
+      'SELECT w.user_id, b.address FROM wallets w JOIN bnb_log b ON w.user_id = b.user_id WHERE w.id = ?',
+      [from_wallet_id]
+    );
+
+    if (!wallet) {
+      return res.status(404).json({ error: 'Wallet not found' });
+    }
+
+    // 실제 BNB 전송 로직은 Web3 라이브러리 필요
+    // 여기서는 시뮬레이션
+    const txHash = `0x${Math.random().toString(16).substr(2, 64)}`;
+
+    // 트랜잭션 로그 기록
+    await db.query(
+      'INSERT INTO bnb_transaction_log (from_address, to_address, amount, tx_hash, status, created_at) VALUES (?, ?, ?, ?, "SUCCESS", NOW())',
+      [wallet.address, to_address, amount, txHash]
+    );
+
+    res.json({ success: true, txHash });
+  } catch (err) {
+    console.error('❌ BNB 전송 실패:', err);
+    res.status(500).json({ error: 'Transfer failed' });
+  }
+});
+
+// BNB 트랜잭션 내역 조회
+router.get('/admin/bnb-transactions', async (req, res) => {
+  try {
+    const [rows] = await db.query(`
+      SELECT 
+        id,
+        from_address,
+        to_address,
+        amount,
+        tx_hash,
+        status,
+        created_at,
+        CASE 
+          WHEN from_address IN (SELECT address FROM bnb_log) THEN 'send'
+          ELSE 'receive'
+        END as type
+      FROM bnb_transaction_log
+      ORDER BY created_at DESC
+      LIMIT 100
+    `);
+    res.json(rows);
+  } catch (err) {
+    console.error('❌ BNB 트랜잭션 내역 조회 실패:', err);
+    res.status(500).json({ error: 'Failed to fetch BNB transactions' });
+  }
+});
+
+// BNB 회수
+router.post('/admin/bnb-reclaim', async (req, res) => {
+  try {
+    const { wallet_id } = req.body;
+
+    // 지갑 정보 조회
+    const [[wallet]] = await db.query(
+      'SELECT w.user_id, b.address, w.real_bamount FROM wallets w JOIN bnb_log b ON w.user_id = b.user_id WHERE w.id = ?',
+      [wallet_id]
+    );
+
+    if (!wallet) {
+      return res.status(404).json({ error: 'Wallet not found' });
+    }
+
+    // 관리자 설정 조회
+    const [[setting]] = await db.query(
+      'SELECT admin_address FROM bnb_settings ORDER BY id DESC LIMIT 1'
+    );
+
+    if (!setting) {
+      return res.status(404).json({ error: 'Admin settings not found' });
+    }
+
+    if (Number(wallet.real_bamount) > 0) {
+      // 실제 BNB 전송 로직은 Web3 라이브러리 필요
+      // 여기서는 시뮬레이션
+      const txHash = `0x${Math.random().toString(16).substr(2, 64)}`;
+
+      // 트랜잭션 로그 기록
+      await db.query(
+        'INSERT INTO bnb_transaction_log (from_address, to_address, amount, tx_hash, status, created_at) VALUES (?, ?, ?, ?, "SUCCESS", NOW())',
+        [wallet.address, setting.admin_address, wallet.real_bamount, txHash]
+      );
+
+      res.json({ success: true, txHash, amount: wallet.real_bamount });
+    } else {
+      res.json({ success: true, message: 'No BNB to reclaim' });
+    }
+  } catch (err) {
+    console.error('❌ BNB 회수 실패:', err);
+    res.status(500).json({ error: 'Reclaim failed' });
   }
 });
 

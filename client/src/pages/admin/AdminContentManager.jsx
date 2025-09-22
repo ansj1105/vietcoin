@@ -1,13 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import AdminNav from '../../components/admin/AdminNav';
+import AdminCard from '../../components/admin/AdminCard';
+import AdminButton from '../../components/admin/AdminButton';
 
 // 허용 확장자 목록
 const IMAGE_EXTS = ['.jpg', '.jpeg', '.png'];
 const VIDEO_EXTS = ['.mp4', '.mov'];
 const PDF_EXTS = ['.pdf'];
 
-export default function AdminContentManager({ onLogout }) {
+export default function AdminContentManager() {
   const [banners, setBanners] = useState([]);
   const [videos, setVideos] = useState([]);
   const [pdfs, setPdfs] = useState([]);
@@ -124,16 +125,19 @@ export default function AdminContentManager({ onLogout }) {
   };
 
   return (
-    <div className="ml-64 min-h-screen bg-gray-100">
-      <AdminNav onLogout={onLogout} />
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">콘텐츠 관리</h1>
+          <p className="text-gray-600 dark:text-gray-400 mt-1">배너, 동영상, PDF 파일을 관리하세요</p>
+        </div>
+      </div>
 
-      <div className="p-6">
-        <h2 className="text-2xl font-bold mb-6">🎛 콘텐츠 업로드 관리</h2>
-
-        {/* 배너 섹션 */}
-        <section className="mb-12">
-          <h3 className="font-semibold mb-2">🖼 배너 이미지 (최대 4개)</h3>
-          <div className="flex items-center mb-2">
+      {/* Banner Section */}
+      <AdminCard title="배너 이미지" subtitle="최대 4개까지 업로드 가능">
+        <div className="space-y-4">
+          <div className="flex items-center space-x-4">
             <input
               type="file"
               accept="image/*"
@@ -141,42 +145,54 @@ export default function AdminContentManager({ onLogout }) {
                 const file = e.target.files[0];
                 if (file) setBannerFile(file);
               }}
+              className="block w-full text-sm text-gray-500 dark:text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 dark:file:bg-gray-700 dark:file:text-gray-300"
             />
-            <span className="ml-4 text-sm text-gray-700">{bannerFile?.name || '선택된 파일 없음'}</span>
-            <button
+            <span className="text-sm text-gray-600 dark:text-gray-400">
+              {bannerFile?.name || '선택된 파일 없음'}
+            </span>
+            <AdminButton
               onClick={() => upload('banner')}
               disabled={!bannerFile || banners.length >= 4}
-              className="ml-4 bg-blue-500 text-white px-4 py-1 rounded disabled:opacity-50"
             >
               업로드
-            </button>
+            </AdminButton>
           </div>
-          <ul className="grid grid-cols-2 gap-4">
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             {banners.length > 0 ? banners.map((b) => (
-              <li key={b.id} className="flex flex-col items-center bg-white p-2 rounded shadow">
+              <div key={b.id} className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden hover:shadow-md transition-shadow">
                 <img
                   src={`${API_HOST}${b.file_path}`}
                   alt="banner-thumb"
-                  className="h-24 w-full object-cover rounded mb-2"
+                  className="h-32 w-full object-cover"
                 />
-                <span className="text-xs text-gray-600 mb-2">{b.file_path.split('/').pop()}</span>
-                <button
-                  onClick={() => handleDelete(b.id)}
-                  className="bg-red-500 text-white px-3 py-1 rounded text-sm"
-                >
-                  삭제
-                </button>
-              </li>
+                <div className="p-3">
+                  <p className="text-xs text-gray-600 dark:text-gray-400 mb-2 truncate">
+                    {b.file_path.split('/').pop()}
+                  </p>
+                  <AdminButton
+                    variant="danger"
+                    size="sm"
+                    onClick={() => handleDelete(b.id)}
+                    className="w-full"
+                  >
+                    삭제
+                  </AdminButton>
+                </div>
+              </div>
             )) : (
-              <p className="col-span-2 text-gray-500">등록된 배너가 없습니다.</p>
+              <div className="col-span-full text-center py-8 text-gray-500 dark:text-gray-400">
+                등록된 배너가 없습니다.
+              </div>
             )}
-          </ul>
-        </section>
+          </div>
+        </div>
+      </AdminCard>
 
-        {/* 동영상 섹션 */}
-        <section className="mb-12">
-          <h3 className="font-semibold mb-2">🎥 동영상 (최대 1개)</h3>
-          <div className="flex items-center mb-2">
+      {/* Video Section */}
+      <AdminCard title="동영상" subtitle="최대 1개까지 업로드 가능">
+        <div className="space-y-4">
+          <div className="flex items-center space-x-4">
             <input
               type="file"
               accept="video/*"
@@ -184,42 +200,52 @@ export default function AdminContentManager({ onLogout }) {
                 const file = e.target.files[0];
                 if (file) setVideoFile(file);
               }}
+              className="block w-full text-sm text-gray-500 dark:text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-green-50 file:text-green-700 hover:file:bg-green-100 dark:file:bg-gray-700 dark:file:text-gray-300"
             />
-            <span className="ml-4 text-sm text-gray-700">{videoFile?.name || '선택된 파일 없음'}</span>
-            <button
+            <span className="text-sm text-gray-600 dark:text-gray-400">
+              {videoFile?.name || '선택된 파일 없음'}
+            </span>
+            <AdminButton
               onClick={() => upload('video')}
               disabled={!videoFile || videos.length >= 1}
-              className="ml-4 bg-green-500 text-white px-4 py-1 rounded disabled:opacity-50"
+              variant="success"
             >
               업로드
-            </button>
+            </AdminButton>
           </div>
-          <div>
-            {videos.length > 0 ? videos.map((v) => (
-              <div key={v.id} className="mb-6 bg-white p-4 rounded shadow">
-                <video
-                  controls
-                  className="w-full max-w-lg rounded mb-2"
-                  src={`${API_HOST}${v.file_path}`}
-                />
-                <span className="block text-xs text-gray-600 mb-2">{v.file_path.split('/').pop()}</span>
-                <button
+
+          {videos.length > 0 ? videos.map((v) => (
+            <div key={v.id} className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
+              <video
+                controls
+                className="w-full rounded-t-lg"
+                src={`${API_HOST}${v.file_path}`}
+              />
+              <div className="p-4 bg-gray-50 dark:bg-gray-700 flex items-center justify-between">
+                <span className="text-sm text-gray-600 dark:text-gray-400">
+                  {v.file_path.split('/').pop()}
+                </span>
+                <AdminButton
+                  variant="danger"
+                  size="sm"
                   onClick={() => handleDelete(v.id)}
-                  className="bg-red-500 text-white px-3 py-1 rounded text-sm"
                 >
                   삭제
-                </button>
+                </AdminButton>
               </div>
-            )) : (
-              <p className="text-gray-500">등록된 동영상이 없습니다.</p>
-            )}
-          </div>
-        </section>
+            </div>
+          )) : (
+            <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+              등록된 동영상이 없습니다.
+            </div>
+          )}
+        </div>
+      </AdminCard>
 
-        {/* PDF 섹션 */}
-        <section>
-          <h3 className="font-semibold mb-2">📄 PDF 문서 백서등록 (최대 1개)</h3>
-          <div className="flex items-center mb-2">
+      {/* PDF Section */}
+      <AdminCard title="PDF 문서" subtitle="백서 등록 (최대 1개)">
+        <div className="space-y-4">
+          <div className="flex items-center space-x-4">
             <input
               type="file"
               accept=".pdf"
@@ -227,44 +253,64 @@ export default function AdminContentManager({ onLogout }) {
                 const file = e.target.files[0];
                 if (file) setPdfFile(file);
               }}
+              className="block w-full text-sm text-gray-500 dark:text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-purple-50 file:text-purple-700 hover:file:bg-purple-100 dark:file:bg-gray-700 dark:file:text-gray-300"
             />
-            <span className="ml-4 text-sm text-gray-700">{pdfFile?.name || '선택된 파일 없음'}</span>
-            <button
+            <span className="text-sm text-gray-600 dark:text-gray-400">
+              {pdfFile?.name || '선택된 파일 없음'}
+            </span>
+            <AdminButton
               onClick={() => upload('pdf')}
               disabled={!pdfFile || pdfs.length >= 1}
-              className="ml-4 bg-purple-500 text-white px-4 py-1 rounded disabled:opacity-50"
+              variant="secondary"
             >
               업로드
-            </button>
+            </AdminButton>
           </div>
-          <div className="grid grid-cols-1 gap-4">
-            {pdfs.length > 0 ? pdfs.map((p) => (
-              <div key={p.id} className="bg-white p-4 rounded shadow">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm font-medium">PDF 문서</span>
+
+          {pdfs.length > 0 ? pdfs.map((p) => (
+            <div key={p.id} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  <div className="w-10 h-10 bg-red-100 dark:bg-red-900/20 rounded-lg flex items-center justify-center">
+                    <svg className="w-6 h-6 text-red-600 dark:text-red-400" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clipRule="evenodd" />
+                    </svg>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-900 dark:text-white">PDF 문서</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">{p.file_path.split('/').pop()}</p>
+                  </div>
+                </div>
+
+                <div className="flex items-center space-x-2">
                   <a
-                      href={`${API_HOST}${p.file_path}`}
+                    href={`${API_HOST}${p.file_path}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-blue-500 hover:text-blue-700 text-sm"
+                    className="inline-flex items-center px-3 py-1.5 text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300"
                   >
+                    <svg className="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                    </svg>
                     보기
                   </a>
+                  <AdminButton
+                    variant="danger"
+                    size="sm"
+                    onClick={() => handleDelete(p.id)}
+                  >
+                    삭제
+                  </AdminButton>
                 </div>
-                <span className="block text-xs text-gray-600 mb-2">{p.file_path.split('/').pop()}</span>
-                <button
-                  onClick={() => handleDelete(p.id)}
-                  className="bg-red-500 text-white px-3 py-1 rounded text-sm"
-                >
-                  삭제
-                </button>
               </div>
-            )) : (
-              <p className="text-gray-500">등록된 PDF가 없습니다.</p>
-            )}
-          </div>
-        </section>
-      </div>
+            </div>
+          )) : (
+            <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+              등록된 PDF가 없습니다.
+            </div>
+          )}
+        </div>
+      </AdminCard>
     </div>
   );
 }

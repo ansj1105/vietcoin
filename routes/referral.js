@@ -106,11 +106,11 @@ router.delete('/code/:id', async (req, res) => {
   }
 });
 
-  
- // GET / PUT /referral-settings
-router.get ('/reward-settings', async (req, res) => {
+
+// GET / PUT /referral-settings
+router.get('/reward-settings', async (req, res) => {
   const [rows] = await db.query('SELECT * FROM referral_reward_settings LIMIT 1');
-  res.json({ success:true, data: rows[0] || {levelA:0,levelB:0,levelC:0} });
+  res.json({ success: true, data: rows[0] || { levelA: 0, levelB: 0, levelC: 0 } });
 });
 
 router.put('/reward-settings', async (req, res) => {
@@ -127,7 +127,7 @@ router.put('/reward-settings', async (req, res) => {
       [levelA, levelB, levelC]
     );
   }
-  res.json({ success:true });
+  res.json({ success: true });
 });
 
 // 유틸: 사용자 객체에 team_count, total_profit, last_active 추가
@@ -204,17 +204,17 @@ router.get('/users/:id/my-team', async (req, res) => {
     const A_ids = A.map(u => u.id);
     const [Braw] = A_ids.length
       ? await db.query(
-          'SELECT id, name, email, vip_level, created_at FROM users WHERE referrer_id IN (?) AND referral_level = 3',
-          [A_ids]
-        )
+        'SELECT id, name, email, vip_level, created_at FROM users WHERE referrer_id IN (?) AND referral_level = 3',
+        [A_ids]
+      )
       : [[]];
     const B = await Promise.all(Braw.map(enrichUser));
     const B_ids = B.map(u => u.id);
     const [Craw] = B_ids.length
       ? await db.query(
-          'SELECT id, name, email, vip_level, created_at FROM users WHERE referrer_id IN (?) AND referral_level = 4',
-          [B_ids]
-        )
+        'SELECT id, name, email, vip_level, created_at FROM users WHERE referrer_id IN (?) AND referral_level = 4',
+        [B_ids]
+      )
       : [[]];
     const C = await Promise.all(Craw.map(enrichUser));
     res.json({ success: true, data: { S, A, B, C } });
@@ -340,18 +340,18 @@ router.get('/users/all/my-teams', async (req, res) => {
 
       const [Braw] = A_ids.length
         ? await db.query(
-            'SELECT id,name,email,vip_level,created_at FROM users WHERE referrer_id IN (?) AND referral_level = 3',
-            [A_ids]
-          )
+          'SELECT id,name,email,vip_level,created_at FROM users WHERE referrer_id IN (?) AND referral_level = 3',
+          [A_ids]
+        )
         : [[]];
       const B = await Promise.all(Braw.map(enrichUser));
       const B_ids = B.map(u => u.id);
 
       const [Craw] = B_ids.length
         ? await db.query(
-            'SELECT id,name,email,vip_level,created_at FROM users WHERE referrer_id IN (?) AND referral_level = 4',
-            [B_ids]
-          )
+          'SELECT id,name,email,vip_level,created_at FROM users WHERE referrer_id IN (?) AND referral_level = 4',
+          [B_ids]
+        )
         : [[]];
       const C = await Promise.all(Craw.map(enrichUser));
 
@@ -369,25 +369,39 @@ router.get('/users/all/my-teams', async (req, res) => {
 router.get("/admin/my-team", async (req, res) => {
   try {
     const enrichUser = async (id) => {
-      const [[u]] = await db.query(`SELECT id,name,email,vip_level,created_at FROM users WHERE id = ?`, [id]);
-      const [[{ team_count }]] = await db.query(`SELECT COUNT(*) AS team_count FROM referral_relations WHERE referrer_id = ? AND status='active'`, [id]);
-      const [[{ total_profit }]] = await db.query(`SELECT IFNULL(SUM(amount),0) AS total_profit FROM referral_rewards WHERE user_id = ?`, [id]);
-      return {
-        id: u.id,
-        name: u.name,
-        email: u.email,
-        vip_level: u.vip_level,
-        created_at: u.created_at,
-        team_count: Number(team_count),
-        total_profit: parseFloat(total_profit),
-        last_active: u.created_at
-      };
+      try {
+        const [[u]] = await db.query(`SELECT id,name,email,vip_level,created_at FROM users WHERE id = ?`, [id]);
+        if (!u) {
+          console.warn(`User not found with id: ${id}`);
+          return null;
+        }
+
+        const [[{ team_count }]] = await db.query(`SELECT COUNT(*) AS team_count FROM referral_relations WHERE referrer_id = ? AND status='active'`, [id]);
+        const [[{ total_profit }]] = await db.query(`SELECT IFNULL(SUM(amount),0) AS total_profit FROM referral_rewards WHERE user_id = ?`, [id]);
+
+        return {
+          id: u.id,
+          name: u.name,
+          email: u.email,
+          vip_level: u.vip_level,
+          created_at: u.created_at,
+          team_count: Number(team_count),
+          total_profit: parseFloat(total_profit),
+          last_active: u.created_at
+        };
+      } catch (err) {
+        console.error(`Error enriching user ${id}:`, err);
+        return null;
+      }
     };
 
     const [userIds] = await db.query(`SELECT id FROM users`);
 
     const teams = await Promise.all(userIds.map(async ({ id }) => {
       const S = await enrichUser(id);
+      if (!S) {
+        return null; // 사용자가 없으면 null 반환
+      }
 
       const [relations] = await db.query(
         `SELECT referred_id, level FROM referral_relations
@@ -399,14 +413,17 @@ router.get("/admin/my-team", async (req, res) => {
       const B_ids = relations.filter(r => r.level === 2).map(r => r.referred_id);
       const C_ids = relations.filter(r => r.level === 3).map(r => r.referred_id);
 
-      const A = A_ids.length ? await Promise.all(A_ids.map(enrichUser)) : [];
-      const B = B_ids.length ? await Promise.all(B_ids.map(enrichUser)) : [];
-      const C = C_ids.length ? await Promise.all(C_ids.map(enrichUser)) : [];
+      const A = A_ids.length ? (await Promise.all(A_ids.map(enrichUser))).filter(user => user !== null) : [];
+      const B = B_ids.length ? (await Promise.all(B_ids.map(enrichUser))).filter(user => user !== null) : [];
+      const C = C_ids.length ? (await Promise.all(C_ids.map(enrichUser))).filter(user => user !== null) : [];
 
       return { S, A, B, C };
     }));
 
-    res.json({ success: true, data: teams });
+    // null 값들 필터링
+    const validTeams = teams.filter(team => team !== null);
+
+    res.json({ success: true, data: validTeams });
   } catch (err) {
     console.error('❌ 관리자용 팀 조회 오류:', err);
     res.status(500).json({ success: false, error: 'Admin team fetch failed' });
@@ -576,9 +593,9 @@ router.get('/contributions', async (req, res) => {
       },
       list: rows.map(r => ({
         user_name: r.userName,
-        level:     r.levelLabel,
-        time:      r.time,
-        earning:   parseFloat(r.earning)
+        level: r.levelLabel,
+        time: r.time,
+        earning: parseFloat(r.earning)
       }))
     });
   } catch (err) {

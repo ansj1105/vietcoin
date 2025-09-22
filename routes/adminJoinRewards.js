@@ -61,12 +61,16 @@ router.get('/claims', async (req, res) => {
     const [rows] = await db.query(`
       SELECT ujr.id,
              ujr.user_id,
-             u.email,
+             u.email as user_email,
              ujr.join_reward_id,
              jr.amount,
              jr.required_balance,
              ujr.claimed,
-             ujr.claimed_at
+             ujr.claimed_at as created_at,
+             CASE 
+               WHEN ujr.claimed = 1 THEN 'approved'
+               ELSE 'pending'
+             END as status
         FROM user_join_rewards ujr
         JOIN users u  ON u.id = ujr.user_id
         JOIN join_rewards jr ON jr.id = ujr.join_reward_id

@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@headlessui/react": "^2.2.2",
+    "@heroicons/react": "^2.2.0",
     "axios": "^1.8.4",
     "axois": "^0.0.1-security",
     "date-fns": "^4.1.0",

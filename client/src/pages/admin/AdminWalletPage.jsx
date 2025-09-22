@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
 import axios from 'axios';
-import AdminNav from '../../components/admin/AdminNav';
-import { useTranslation } from 'react-i18next';
+import AdminCard from '../../components/admin/AdminCard';
+import AdminButton from '../../components/admin/AdminButton';
+import AdminInput from '../../components/admin/AdminInput';
 
-export default function AdminWalletPage({ onLogout }) {
+export default function AdminWalletPage() {
   const [wallets, setWallets] = useState([]);
   const [selectedWallet, setSelectedWallet] = useState(null);
   const [trxBalance, setTrxBalance] = useState(null);
@@ -15,376 +16,484 @@ export default function AdminWalletPage({ onLogout }) {
   const [newWallet, setNewWallet] = useState(null);
   const [activeTab, setActiveTab] = useState('manage'); // 'manage' | 'transactions' | 'reclaim'
   const [transactions, setTransactions] = useState([]);
+  const [loading, setLoading] = useState(false);
 
   // Admin settings
   const [adminAddress, setAdminAddress] = useState('');
-  const [adminPrivateKey, setAdminPrivateKey] = useState('');
   const [threshold, setThreshold] = useState('');
   const [selectedAdminWallet, setSelectedAdminWallet] = useState(null);
-  // 잔액
-  const [adminTrx, setAdminTrx] = useState(null);
-  const [adminUsdt, setAdminUsdt] = useState(null);
-  // 회수 관련
-  const [reclaimModal, setReclaimModal] = useState(false);
-  const [reclaimTargets, setReclaimTargets] = useState([]);
-  const [reclaimResult, setReclaimResult] = useState(null);
-  const [adminTrxBefore, setAdminTrxBefore] = useState(null);
-  const [adminTrxAfter, setAdminTrxAfter] = useState(null);
-  const [adminUsdtBefore, setAdminUsdtBefore] = useState(null);
-  const [adminUsdtAfter, setAdminUsdtAfter] = useState(null);
-  const [fundTrxAmount, setFundTrxAmount] = useState(2.5); // 기본값 2.5 TRX
 
-  const { t } = useTranslation();
-
-  // Admin settings
-  const loadAdminSettings = async () => {
-    try {
-      const res = await axios.get('/api/tron/reclaim-settings');
-      const { admin_address, threshold } = res.data;
-      setAdminAddress(admin_address || '');
-      setThreshold(threshold || '');
-      // 프라이빗키는 저장 시에만 입력받음(보안)
-      // 선택된 관리자 지갑 자동 선택
-      const admin = wallets.find(w => w.address === admin_address);
-      if (admin) setSelectedAdminWallet(admin.id);
-    } catch (err) {
-      setAdminAddress('');
-      setThreshold('');
-    }
-  };
-  // 관리자 설정 저장
-  const handleAdminSettingSave = async () => {
-    try {
-      const adminWallet = wallets.find(w => w.id === +selectedAdminWallet);
-      await axios.post('/api/tron/reclaim-settings', {
-        admin_address: adminWallet?.address,
-        admin_private_key: adminWallet?.private_key,
-        threshold: parseFloat(threshold)
-      });
-      window.alert('관리자 설정이 저장되었습니다.');
-      loadAdminSettings();
-    } catch (err) {
-      window.alert('관리자 설정 저장에 실패했습니다.');
-    }
-  };
-
-  // 관리자 잔액 조회
-  const fetchAdminBalances = async (address) => {
-    if (!address) { setAdminTrx(null); setAdminUsdt(null); return; }
-    try {
-      const trxRes = await axios.get('/api/tron/balance-trx', { params: { address } });
-      setAdminTrx(trxRes.data.trx);
-      const usdtRes = await axios.get('/api/tron/balance', { params: { address } });
-      setAdminUsdt(usdtRes.data.usdt);
-    } catch (err) {
-      setAdminTrx(null); setAdminUsdt(null);
-    }
-  };
-  useEffect(() => { loadWallets(); }, []);
-  useEffect(() => { loadAdminSettings(); }, [wallets]);
-  useEffect(() => { fetchAdminBalances(adminAddress); }, [adminAddress]);
+  useEffect(() => {
+    loadWallets();
+    loadAdminSettings();
+  }, []);
 
   const loadWallets = async () => {
     try {
-      const res = await axios.get('/api/tron/create-wallet/logs');
-      setWallets(res.data.data);
-    } catch (err) {}
-  };
-
-  // 회수 대상 미리보기
-  const fetchReclaimTargets = async () => {
-    if (!threshold) return [];
-    const { data } = await axios.get('/api/tron/create-wallet/logs');
-    // 실제로는 wallets 테이블에서 real_amount >= threshold 인 지갑을 백엔드에서 조회해야 함
-    // 여기서는 예시로 모든 지갑을 불러오고, real_amount 필드가 있다고 가정
-    // 실제 적용 시 /api/withdrawals/wallets 등에서 real_amount 필터링 필요
-    return (data.data || []).filter(w => Number(w.real_amount) >= Number(threshold));
-  };
-
-  // 회수 실행
-  const handleReclaim = async () => {
-    setReclaimResult(null);
-    setReclaimModal(true);
-    setAdminTrxBefore(adminTrx);
-    setAdminUsdtBefore(adminUsdt);
-    const targets = await fetchReclaimTargets();
-    setReclaimTargets(targets);
-    try {
-      const adminWallet = wallets.find(w => w.id === +selectedAdminWallet);
-      const res = await axios.post('/api/tron/reclaim-funds', {
-        threshold,
-        admin_address: adminWallet?.address,
-        admin_private_key: adminWallet?.private_key,
-        fund_trx_amount: fundTrxAmount
-      });
-      setReclaimResult(res.data);
-      setTimeout(async () => {
-        await fetchAdminBalances(adminWallet?.address);
-        setAdminTrxAfter(adminTrx);
-        setAdminUsdtAfter(adminUsdt);
-      }, 5000);
+      const res = await axios.get('/api/tron/admin/wallets', { withCredentials: true });
+      setWallets(res.data || []);
     } catch (err) {
-      setReclaimResult({ error: err.message });
+      console.error('지갑 로드 실패:', err);
     }
   };
 
-  useEffect(() => {
-    if (selectedWallet) {
-      fetchBalances(selectedWallet.address);
-    } else {
-      setTrxBalance(null);
-      setUsdtBalance(null);
-    }
-  }, [selectedWallet]);
-
-  const fetchBalances = async (addr) => {
+  const loadAdminSettings = async () => {
     try {
-      const trxRes = await axios.get('/api/tron/balance-trx', { params: { address: addr } });
-      setTrxBalance(trxRes.data.trx);
-      const usdtRes = await axios.get('/api/tron/balance', { params: { address: addr } });
-      setUsdtBalance(usdtRes.data.usdt);
+      const res = await axios.get('/api/tron/admin/settings', { withCredentials: true });
+      if (res.data) {
+        setAdminAddress(res.data.admin_address || '');
+        setThreshold(res.data.threshold || '');
+        setSelectedAdminWallet(res.data.admin_wallet_id || null);
+      }
     } catch (err) {
-      console.error('잔액 조회 실패:', err);
-      setMessage({ type: 'error', text: '잔액 조회 중 오류가 발생했습니다.' });
+      console.error('관리자 설정 로드 실패:', err);
     }
   };
 
-  const handleTransfer = async () => {
-    if (!selectedWallet) return;
-    setMessage(null);
-    try {
-      const api = transferType === 'trx' ? '/api/tron/send-trx' : '/api/tron/send';
-      const body = { fromPrivateKey: selectedWallet.private_key, toAddress, amount: parseFloat(amount) };
-      const res = await axios.post(api, body);
-      setMessage({ type: 'success', text: `전송 성공: ${res.data.txHash || res.data.tx}` });
-      fetchBalances(selectedWallet.address);
-    } catch (err) {
-      console.error('전송 실패:', err);
-      setMessage({ type: 'error', text: '전송 실패' });
-    }
-  };
-
-  // Transactions tab
-  useEffect(() => {
-    if (activeTab === 'transactions') loadTransactions();
-  }, [activeTab]);
   const loadTransactions = async () => {
+    setLoading(true);
     try {
-      const res = await axios.get('/api/tron/transactions');
-      setTransactions(res.data.data || []);
+      const res = await axios.get('/api/tron/admin/transactions', { withCredentials: true });
+      setTransactions(res.data || []);
     } catch (err) {
       console.error('트랜잭션 로드 실패:', err);
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleCreateWallet = async () => {
+    setLoading(true);
     try {
-      const res = await axios.get('/api/tron/create-wallet');
-      await loadWallets();
-      setNewWallet({ address: res.data.address, privateKey: res.data.privateKey });
-      window.alert('지갑 생성이 완료되었습니다.');
+      const res = await axios.post('/api/tron/admin/create-wallet', {}, { withCredentials: true });
+      setNewWallet(res.data);
+      setMessage({ type: 'success', text: '새 지갑이 생성되었습니다.' });
+      loadWallets();
     } catch (err) {
       console.error('지갑 생성 실패:', err);
-      window.alert('지갑 생성에 실패했습니다.');
+      setMessage({ type: 'error', text: '지갑 생성에 실패했습니다.' });
+    } finally {
+      setLoading(false);
     }
   };
 
+  const handleTransfer = async () => {
+    if (!selectedWallet || !toAddress || !amount) {
+      setMessage({ type: 'error', text: '모든 필드를 입력해주세요.' });
+      return;
+    }
+
+    setLoading(true);
+    try {
+      await axios.post('/api/tron/admin/transfer', {
+        from_wallet_id: selectedWallet.id,
+        to_address: toAddress,
+        amount: amount,
+        type: transferType
+      }, { withCredentials: true });
+
+      setMessage({ type: 'success', text: '전송이 완료되었습니다.' });
+      setToAddress('');
+      setAmount('');
+      loadWallets();
+    } catch (err) {
+      console.error('전송 실패:', err);
+      setMessage({ type: 'error', text: '전송에 실패했습니다.' });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSaveSettings = async () => {
+    setLoading(true);
+    try {
+      await axios.post('/api/tron/reclaim-settings', {
+        admin_address: adminAddress,
+        threshold: threshold,
+        admin_wallet_id: selectedAdminWallet
+      }, { withCredentials: true });
+
+      setMessage({ type: 'success', text: '설정이 저장되었습니다.' });
+    } catch (err) {
+      console.error('설정 저장 실패:', err);
+      setMessage({ type: 'error', text: '설정 저장에 실패했습니다.' });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleReclaim = async (walletId) => {
+    if (!window.confirm('정말 회수하시겠습니까?')) return;
+
+    setLoading(true);
+    try {
+      await axios.post('/api/tron/admin/reclaim', { wallet_id: walletId }, { withCredentials: true });
+      setMessage({ type: 'success', text: '회수가 완료되었습니다.' });
+      loadWallets();
+    } catch (err) {
+      console.error('회수 실패:', err);
+      setMessage({ type: 'error', text: '회수에 실패했습니다.' });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleWalletSelect = async (wallet) => {
+    setSelectedWallet(wallet);
+    try {
+      const [trxRes, usdtRes] = await Promise.all([
+        axios.get(`/api/tron/admin/balance/${wallet.address}/trx`, { withCredentials: true }),
+        axios.get(`/api/tron/admin/balance/${wallet.address}/usdt`, { withCredentials: true })
+      ]);
+      setTrxBalance(trxRes.data.balance);
+      setUsdtBalance(usdtRes.data.balance);
+    } catch (err) {
+      console.error('잔액 조회 실패:', err);
+    }
+  };
+
+  useEffect(() => {
+    if (activeTab === 'transactions') {
+      loadTransactions();
+    }
+  }, [activeTab]);
+
   return (
-    <div className="min-h-screen bg-gray-100 flex">
-      <AdminNav onLogout={onLogout} />
-      <div className="ml-64 p-6 w-full space-y-6">
-        <h1 className="text-2xl font-bold">지갑 관리</h1>
-        {/* 관리자 잔액 표시 */}
-        <div className="mb-4">
-          <span className="mr-4">관리자 TRX: <b>{adminTrx ?? '-'}</b></span>
-          <span>관리자 USDT: <b>{adminUsdt ?? '-'}</b></span>
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Tron 지갑 관리</h1>
+          <p className="text-gray-600 dark:text-gray-400 mt-1">Tron 지갑과 트랜잭션을 관리하세요</p>
         </div>
-        {/* Tabs */}
-        <div className="flex space-x-4 mb-4">
-          {['manage','transactions','reclaim'].map(tab => (
-            <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              className={`px-4 py-2 rounded ${activeTab===tab ? 'bg-blue-600 text-white' : 'bg-gray-200'}`}>
-              {tab==='manage' ? '관리' : tab==='transactions' ? '기록조회' : '자금회수'}
-            </button>
-          ))}
-        </div>
+      </div>
 
-        {/* Manage Tab */}
-        {activeTab==='manage' && (
-          <>
-            <section className="bg-white p-4 rounded shadow space-y-4">
-              <h2 className="text-lg font-semibold mb-2">새 Tron 지갑 생성</h2>
-              <button onClick={handleCreateWallet} className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">지갑 생성</button>
+      {/* Message */}
+      {message && (
+        <div className={`p-4 rounded-lg ${message.type === 'success'
+          ? 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400'
+          : 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400'
+          }`}>
+          {message.text}
+        </div>
+      )}
+
+      {/* Tabs */}
+      <div className="flex space-x-1 bg-gray-100 dark:bg-gray-800 p-1 rounded-lg">
+        {[
+          { key: 'manage', label: '지갑 관리' },
+          { key: 'transactions', label: '트랜잭션' },
+          { key: 'reclaim', label: '회수 관리' }
+        ].map(tab => (
+          <button
+            key={tab.key}
+            onClick={() => setActiveTab(tab.key)}
+            className={`flex-1 px-4 py-2 text-sm font-medium rounded-md transition-all duration-200 ${activeTab === tab.key
+              ? 'bg-white dark:bg-gray-700 text-blue-600 dark:text-blue-400 shadow-sm'
+              : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+              }`}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Manage Tab */}
+      {activeTab === 'manage' && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Create Wallet */}
+          <AdminCard title="Tron 지갑 생성" subtitle="새로운 Tron 지갑을 생성하세요">
+            <div className="space-y-4">
+              <AdminButton
+                onClick={handleCreateWallet}
+                disabled={loading}
+                className="w-full"
+              >
+                {loading ? '생성 중...' : '지갑 생성'}
+              </AdminButton>
+
               {newWallet && (
-                <div className="mt-4 p-3 bg-green-50 border border-green-300 rounded">
-                  <p><strong>주소:</strong> {newWallet.address}</p>
-                  <p><strong>Private Key:</strong> {newWallet.privateKey}</p>
-                </div>
-              )}
-            </section>
-
-            <section className="bg-white p-4 rounded shadow space-y-4">
-              <h2 className="text-lg font-semibold">지갑 선택</h2>
-              <select className="w-full border px-3 py-2 rounded" value={selectedWallet?.id||''} onChange={e=>setSelectedWallet(wallets.find(w=>w.id===+e.target.value))}>
-                <option value="" disabled>지갑 선택...</option>
-                {wallets.map(w=><option key={w.id} value={w.id}>{w.address}</option>)}
-              </select>
-              {selectedWallet && (
-                <div className="space-y-2">
-                  <p><strong>Address:</strong> {selectedWallet.address}</p>
-                  <div className="flex space-x-4">
-                    <p><strong>TRX:</strong> {trxBalance??'...'} TRX</p>
-                    <p><strong>USDT:</strong> {usdtBalance??'...'} USDT</p>
+                <div className="p-4 bg-green-50 dark:bg-green-900/20 border border-green-300 dark:border-green-600 rounded-lg">
+                  <h4 className="font-medium text-green-900 dark:text-green-300 mb-2">새 지갑 정보</h4>
+                  <div className="space-y-2 text-sm">
+                    <div>
+                      <span className="font-medium text-green-800 dark:text-green-400">주소:</span>
+                      <p className="font-mono text-green-700 dark:text-green-300 break-all">{newWallet.address}</p>
+                    </div>
+                    <div>
+                      <span className="font-medium text-green-800 dark:text-green-400">Private Key:</span>
+                      <p className="font-mono text-green-700 dark:text-green-300 break-all">{newWallet.privateKey}</p>
+                    </div>
                   </div>
                 </div>
               )}
-            </section>
-
-            {selectedWallet && (
-              <section className="bg-white p-4 rounded shadow space-y-4">
-                <h2 className="text-lg font-semibold">송금</h2>
-                <div className="flex space-x-2">
-                  <button onClick={()=>setTransferType('trx')} className={`flex-1 py-2 rounded ${transferType==='trx'?'bg-green-400 text-white':'bg-gray-200'}`}>TRX</button>
-                  <button onClick={()=>setTransferType('usdt')} className={`flex-1 py-2 rounded ${transferType==='usdt'?'bg-green-400 text-white':'bg-gray-200'}`}>USDT</button>
-                </div>
-                <input type="text" placeholder="To Address" className="w-full border px-3 py-2 rounded" value={toAddress} onChange={e=>setToAddress(e.target.value)} />
-                <input type="number" placeholder="Amount" className="w-full border px-3 py-2 rounded" value={amount} onChange={e=>setAmount(e.target.value)} />
-                <button onClick={handleTransfer} className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">송금</button>
-                {message && <p className={`${message.type==='success'?'text-green-600':'text-red-600'}`}>{message.text}</p>}
-              </section>
-            )}
-          </>
-        )}
-
-        {/* Transactions Tab */}
-        {activeTab==='transactions' && (
-          <section className="bg-white p-4 rounded shadow">
-            <h2 className="text-lg font-semibold mb-2">트랜잭션 기록</h2>
-            <div className="overflow-auto">
-              <table className="min-w-full table-auto">
-                <thead className="bg-gray-200">
-                  <tr>
-                    <th className="px-2 py-1">ID</th>
-                    <th className="px-2 py-1">From</th>
-                    <th className="px-2 py-1">To</th>
-                    <th className="px-2 py-1">USDT</th>
-                    <th className="px-2 py-1">TRX</th>
-                    <th className="px-2 py-1">Type</th>
-                    <th className="px-2 py-1">txhash</th>
-                    <th className="px-2 py-1">Status</th>
-                    <th className="px-2 py-1">참조</th>
-                    <th className="px-2 py-1">일시</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {transactions.map(tx=> (
-                    <tr key={tx.id} className="border-t">
-                      <td className="px-2 py-1 text-sm">{tx.id}</td>
-                      <td className="px-2 py-1 text-sm">{tx.from_address}</td>
-                      <td className="px-2 py-1 text-sm">{tx.to_address}</td>
-                      <td className="px-2 py-1 text-sm">{tx.amount_usdt}</td>
-                      <td className="px-2 py-1 text-sm">{tx.amount_trx}</td>
-                      <td className="px-2 py-1 text-sm">{tx.type}</td>
-                      <td className="px-2 py-1 text-sm">{tx.tx_hash}</td>
-                      <td className="px-2 py-1 text-sm">{tx.status}</td>
-                      <td className="px-2 py-1 text-sm">{tx.reference_id}</td>
-                      <td className="px-2 py-1 text-sm">{new Date(tx.created_at).toLocaleString()}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
             </div>
-          </section>
-        )}
+          </AdminCard>
 
-        {activeTab==='reclaim' && (
-          <section className="bg-white p-4 rounded shadow space-y-4">
-            <h2 className="text-lg font-semibold">자금 회수 설정</h2>
-            {/* 관리자 설정 입력 */}
-            <label className="block mb-1">{t('wallet.vipLevel')}</label>
-            <select
-              className="w-full border px-3 py-2 rounded mb-2"
-              value={selectedAdminWallet || ''}
-              onChange={e => setSelectedAdminWallet(e.target.value)}
-            >
-              <option value="" disabled>관리자 지갑 선택...</option>
-              {wallets.map(w => (
-                <option key={w.id} value={w.id}>{w.address}</option>
-              ))}
-            </select>
-            <label className="block mb-1 mt-2">회수 임계치 (USDT)</label>
-            <input
-              type="number"
-              step="0.000001"
-              className="w-full border px-3 py-2 rounded mb-2"
-              value={threshold}
-              onChange={e => setThreshold(e.target.value)}
-            />
-            <label className="block mb-1 mt-2">지갑당 송금할 TRX (예: 2.5)</label>
-            <input
-              type="number"
-              step="0.1"
-              className="w-full border px-3 py-2 rounded mb-2"
-              value={fundTrxAmount}
-              onChange={e => setFundTrxAmount(e.target.value)}
-            />
-            <button
-              onClick={handleAdminSettingSave}
-              className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 mr-2"
-            >
-              설정 저장
-            </button>
-            <button
-              onClick={async () => {
-                const targets = await fetchReclaimTargets();
-                setReclaimTargets(targets);
-                setReclaimModal(true);
-              }}
-              className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 mr-2"
-            >
-              회수 대상 미리보기
-            </button>
-            <button
-              onClick={handleReclaim}
-              className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
-            >
-              회수하기
-            </button>
-          </section>
-        )}
-
-        {/* 회수 대상/결과 모달 */}
-        {reclaimModal && (
-          <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
-            <div className="bg-white p-6 rounded shadow-lg max-w-2xl w-full">
-              <h3 className="text-lg font-bold mb-2">회수 대상 및 결과</h3>
-              <div className="mb-2">
-                <b>관리자 잔액 (전):</b> TRX {adminTrxBefore ?? '-'} / USDT {adminUsdtBefore ?? '-'}
-              </div>
-              <div className="mb-2">
-                <b>관리자 잔액 (후):</b> TRX {adminTrxAfter ?? '-'} / USDT {adminUsdtAfter ?? '-'}
-              </div>
-              <div className="mb-2">
-                <b>회수 대상:</b>
-                <ul className="list-disc pl-6">
-                  {reclaimTargets.map(t => (
-                    <li key={t.id}>{t.address} (잔액: {t.real_amount})</li>
+          {/* Transfer Form */}
+          <AdminCard title="Tron 전송" subtitle="TRX 또는 USDT를 다른 주소로 전송하세요">
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  출금 지갑
+                </label>
+                <select
+                  value={selectedWallet?.id || ''}
+                  onChange={e => {
+                    const wallet = wallets.find(w => w.id === parseInt(e.target.value));
+                    handleWalletSelect(wallet);
+                  }}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="">지갑을 선택하세요</option>
+                  {wallets.map(wallet => (
+                    <option key={wallet.id} value={wallet.id}>
+                      {wallet.address}
+                    </option>
                   ))}
-                </ul>
+                </select>
               </div>
-              {reclaimResult && (
-                <div className="mb-2">
-                  <b>회수 결과:</b>
-                  <pre className="bg-gray-100 p-2 rounded text-xs max-h-48 overflow-auto">{JSON.stringify(reclaimResult, null, 2)}</pre>
+
+              {selectedWallet && (
+                <div className="p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                  <h4 className="font-medium text-gray-900 dark:text-white mb-2">잔액 정보</h4>
+                  <div className="grid grid-cols-2 gap-4 text-sm">
+                    <div>
+                      <span className="text-gray-600 dark:text-gray-400">TRX:</span>
+                      <span className="ml-2 font-semibold text-gray-900 dark:text-white">
+                        {trxBalance !== null ? trxBalance.toLocaleString() : '로딩 중...'}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-gray-600 dark:text-gray-400">USDT:</span>
+                      <span className="ml-2 font-semibold text-gray-900 dark:text-white">
+                        {usdtBalance !== null ? usdtBalance.toLocaleString() : '로딩 중...'}
+                      </span>
+                    </div>
+                  </div>
                 </div>
               )}
-              <button onClick={() => setReclaimModal(false)} className="mt-2 px-4 py-2 bg-gray-400 text-white rounded">닫기</button>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  전송 타입
+                </label>
+                <select
+                  value={transferType}
+                  onChange={e => setTransferType(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="trx">TRX</option>
+                  <option value="usdt">USDT</option>
+                </select>
+              </div>
+
+              <AdminInput
+                label="받는 주소"
+                value={toAddress}
+                onChange={e => setToAddress(e.target.value)}
+                placeholder="Tron 주소를 입력하세요"
+              />
+
+              <AdminInput
+                label={`전송량 (${transferType.toUpperCase()})`}
+                type="number"
+                step="0.000001"
+                value={amount}
+                onChange={e => setAmount(e.target.value)}
+                placeholder={`전송할 ${transferType.toUpperCase()} 양을 입력하세요`}
+              />
+
+              <AdminButton
+                onClick={handleTransfer}
+                disabled={loading || !selectedWallet || !toAddress || !amount}
+                className="w-full"
+              >
+                {loading ? '전송 중...' : `${transferType.toUpperCase()} 전송`}
+              </AdminButton>
             </div>
+          </AdminCard>
+        </div>
+      )}
+
+      {/* Wallet List */}
+      {activeTab === 'manage' && (
+        <AdminCard title="지갑 목록" subtitle="현재 등록된 Tron 지갑 목록">
+          <div className="space-y-3">
+            {wallets.map(wallet => (
+              <div key={wallet.id} className="p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                <div className="flex items-center justify-between">
+                  <div className="flex-1">
+                    <p className="text-sm font-medium text-gray-900 dark:text-white font-mono">
+                      {wallet.address}
+                    </p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                      생성일: {new Date(wallet.created_at).toLocaleDateString()}
+                    </p>
+                  </div>
+                  <AdminButton
+                    size="sm"
+                    variant="danger"
+                    onClick={() => handleReclaim(wallet.id)}
+                    disabled={loading}
+                  >
+                    회수
+                  </AdminButton>
+                </div>
+              </div>
+            ))}
           </div>
-        )}
-      </div>
+        </AdminCard>
+      )}
+
+      {/* Transactions Tab */}
+      {activeTab === 'transactions' && (
+        <AdminCard title="트랜잭션 내역" subtitle="Tron 트랜잭션 내역을 확인하세요">
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+              <thead className="bg-gray-50 dark:bg-gray-700">
+                <tr>
+                  {['ID', '타입', '주소', '금액', '상태', '날짜'].map(header => (
+                    <th key={header} className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                      {header}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                {loading ? (
+                  <tr>
+                    <td colSpan="6" className="px-6 py-4 text-center">
+                      <div className="flex items-center justify-center">
+                        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500"></div>
+                        <span className="ml-2 text-gray-600 dark:text-gray-400">로딩 중...</span>
+                      </div>
+                    </td>
+                  </tr>
+                ) : transactions.length === 0 ? (
+                  <tr>
+                    <td colSpan="6" className="px-6 py-4 text-center text-gray-500 dark:text-gray-400">
+                      트랜잭션 내역이 없습니다.
+                    </td>
+                  </tr>
+                ) : (
+                  transactions.map(transaction => (
+                    <tr key={transaction.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
+                        {transaction.id}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${transaction.type === 'send'
+                          ? 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400'
+                          : 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400'
+                          }`}>
+                          {transaction.type === 'send' ? '전송' : '수신'}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white font-mono">
+                        {transaction.address}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900 dark:text-white">
+                        {transaction.amount} {transaction.currency}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${transaction.status === 'confirmed'
+                          ? 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400'
+                          : transaction.status === 'pending'
+                            ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400'
+                            : 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400'
+                          }`}>
+                          {transaction.status}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                        {new Date(transaction.created_at).toLocaleDateString()}
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        </AdminCard>
+      )}
+
+      {/* Reclaim Tab */}
+      {activeTab === 'reclaim' && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Admin Settings */}
+          <AdminCard title="관리자 설정" subtitle="Tron 수수료 관리 설정">
+            <div className="space-y-4">
+              <AdminInput
+                label="관리자 주소"
+                value={adminAddress}
+                onChange={e => setAdminAddress(e.target.value)}
+                placeholder="관리자 Tron 주소를 입력하세요"
+              />
+
+              <AdminInput
+                label="임계값 (TRX)"
+                type="number"
+                step="0.001"
+                value={threshold}
+                onChange={e => setThreshold(e.target.value)}
+                placeholder="자동 회수 임계값을 입력하세요"
+              />
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  관리자 지갑
+                </label>
+                <select
+                  value={selectedAdminWallet || ''}
+                  onChange={e => setSelectedAdminWallet(e.target.value ? parseInt(e.target.value) : null)}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="">지갑을 선택하세요</option>
+                  {wallets.map(wallet => (
+                    <option key={wallet.id} value={wallet.id}>
+                      {wallet.address}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <AdminButton
+                onClick={handleSaveSettings}
+                disabled={loading}
+                className="w-full"
+              >
+                {loading ? '저장 중...' : '설정 저장'}
+              </AdminButton>
+            </div>
+          </AdminCard>
+
+          {/* Reclaim Actions */}
+          <AdminCard title="회수 작업" subtitle="Tron 회수 작업을 수행하세요">
+            <div className="space-y-4">
+              <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                <h4 className="font-medium text-blue-900 dark:text-blue-300 mb-2">자동 회수</h4>
+                <p className="text-sm text-blue-700 dark:text-blue-400 mb-3">
+                  설정된 임계값을 초과하는 지갑의 TRX를 자동으로 회수합니다.
+                </p>
+                <AdminButton variant="secondary" className="w-full">
+                  자동 회수 실행
+                </AdminButton>
+              </div>
+
+              <div className="p-4 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg">
+                <h4 className="font-medium text-yellow-900 dark:text-yellow-300 mb-2">전체 회수</h4>
+                <p className="text-sm text-yellow-700 dark:text-yellow-400 mb-3">
+                  모든 지갑의 TRX를 관리자 지갑으로 회수합니다.
+                </p>
+                <AdminButton variant="warning" className="w-full">
+                  전체 회수 실행
+                </AdminButton>
+              </div>
+            </div>
+          </AdminCard>
+        </div>
+      )}
     </div>
   );
 }

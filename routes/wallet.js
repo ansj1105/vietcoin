@@ -637,12 +637,31 @@ router.get('/projects/:id/stats', async (req, res) => {
 router.get('/admin/wallet-settings', async (req, res) => {
   try {
     const [rows] = await db.query(
-      `SELECT id, deposit_fee_rate, withdraw_fee_rate, auto_approve, updated_at
+      `SELECT id, deposit_fee_rate, withdraw_fee_rate, real_withdraw_fee, 
+              auto_approve, token_to_quant_rate, minimum_deposit_amount, updated_at
          FROM wallet_settings
+         ORDER BY id DESC
          LIMIT 1`
     );
-    if (!rows.length) return res.status(404).json({ error: 'Settings not found' });
-    return res.json({ data: rows[0] });
+    if (!rows.length) {
+      // 기본 설정이 없으면 생성
+      const [result] = await db.query(
+        `INSERT INTO wallet_settings 
+         (deposit_fee_rate, withdraw_fee_rate, real_withdraw_fee, auto_approve, 
+          token_to_quant_rate, minimum_deposit_amount, created_at, updated_at)
+         VALUES (0, 0, 0, 'auto', 1, 10, NOW(), NOW())`
+      );
+
+      const [newRows] = await db.query(
+        `SELECT id, deposit_fee_rate, withdraw_fee_rate, real_withdraw_fee, 
+                auto_approve, token_to_quant_rate, minimum_deposit_amount, updated_at
+         FROM wallet_settings
+         WHERE id = ?`,
+        [result.insertId]
+      );
+      return res.json(newRows[0]);
+    }
+    return res.json(rows[0]);
   } catch (err) {
     console.error('Error fetching wallet settings:', err);
     return res.status(500).json({ error: 'Failed to fetch settings' });
@@ -651,44 +670,148 @@ router.get('/admin/wallet-settings', async (req, res) => {
 
 // ▶ PUT 설정 업데이트
 router.put('/admin/wallet-settings', async (req, res) => {
-  const { deposit_fee_rate, withdraw_fee_rate, auto_approve } = req.body;
-
-  // 유효성 검사
-  if (
-    typeof deposit_fee_rate !== 'number' ||
-    deposit_fee_rate < 0 ||
-    typeof withdraw_fee_rate !== 'number' ||
-    withdraw_fee_rate < 0 ||
-    !['auto', 'manual'].includes(auto_approve)
-  ) {
-    return res.status(400).json({ error: 'Invalid parameters' });
-  }
+  const {
+    deposit_fee_rate,
+    withdraw_fee_rate,
+    real_withdraw_fee,
+    auto_approve,
+    token_to_quant_rate,
+    minimum_deposit_amount
+  } = req.body;
 
   try {
-    // 단일 row라면 id=1 로 고정하거나, 원하는 id로 바꾸세요
-    const SETTINGS_ID = 1;
-
-    await db.query(
-      `UPDATE wallet_settings
-         SET deposit_fee_rate  = ?,
-             withdraw_fee_rate = ?,
-             auto_approve      = ?,
-             updated_at        = NOW()
-       WHERE id = ?`,
-      [deposit_fee_rate, withdraw_fee_rate, auto_approve, SETTINGS_ID]
+    // 기존 설정이 있는지 확인
+    const [[existing]] = await db.query(
+      `SELECT id FROM wallet_settings ORDER BY id DESC LIMIT 1`
     );
 
-    // 업데이트 후 변경된 설정을 다시 조회해 반환
-    const [[updated]] = await db.query(
-      `SELECT id, deposit_fee_rate, withdraw_fee_rate, auto_approve, updated_at
-         FROM wallet_settings
+    if (existing) {
+      // 기존 설정 업데이트
+      await db.query(
+        `UPDATE wallet_settings
+         SET deposit_fee_rate = ?, 
+             withdraw_fee_rate = ?, 
+             real_withdraw_fee = ?,
+             auto_approve = ?, 
+             token_to_quant_rate = ?, 
+             minimum_deposit_amount = ?,
+             updated_at = NOW()
          WHERE id = ?`,
-      [SETTINGS_ID]
-    );
-    return res.json({ data: updated });
+        [deposit_fee_rate, withdraw_fee_rate, real_withdraw_fee, auto_approve,
+          token_to_quant_rate, minimum_deposit_amount, existing.id]
+      );
+    } else {
+      // 새 설정 생성
+      await db.query(
+        `INSERT INTO wallet_settings 
+         (deposit_fee_rate, withdraw_fee_rate, real_withdraw_fee, auto_approve, 
+          token_to_quant_rate, minimum_deposit_amount, created_at, updated_at)
+         VALUES (?, ?, ?, ?, ?, ?, NOW(), NOW())`,
+        [deposit_fee_rate, withdraw_fee_rate, real_withdraw_fee, auto_approve,
+          token_to_quant_rate, minimum_deposit_amount]
+      );
+    }
+
+    res.json({ success: true, message: 'Settings saved successfully' });
   } catch (err) {
     console.error('Error updating wallet settings:', err);
     return res.status(500).json({ error: 'Failed to update settings' });
+  }
+});
+
+// GET /api/wallet/settings - 프론트엔드 호환성을 위한 엔드포인트
+router.get('/settings', async (req, res) => {
+  try {
+    const [[settings]] = await db.query(
+      `SELECT id, deposit_fee_rate, withdraw_fee_rate, auto_approve, updated_at
+       FROM wallet_settings
+       ORDER BY id DESC
+       LIMIT 1`
+    );
+
+    if (!settings) {
+      // 기본 설정이 없으면 생성
+      const [result] = await db.query(
+        `INSERT INTO wallet_settings (deposit_fee_rate, withdraw_fee_rate, auto_approve, created_at, updated_at)
+         VALUES (0, 0, 'manual', NOW(), NOW())`
+      );
+
+      const [[newSettings]] = await db.query(
+        `SELECT id, deposit_fee_rate, withdraw_fee_rate, auto_approve, updated_at
+         FROM wallet_settings
+         WHERE id = ?`,
+        [result.insertId]
+      );
+
+      return res.json(newSettings);
+    }
+
+    res.json(settings);
+  } catch (err) {
+    console.error('❌ 설정 조회 실패:', err);
+    res.status(500).json({ error: 'Failed to fetch settings' });
+  }
+});
+
+// POST /api/wallet/settings - 프론트엔드 호환성을 위한 엔드포인트
+router.post('/settings', async (req, res) => {
+  const { deposit_fee_rate, withdraw_fee_rate, auto_approve } = req.body;
+
+  try {
+    // 기존 설정이 있는지 확인
+    const [[existing]] = await db.query(
+      `SELECT id FROM wallet_settings ORDER BY id DESC LIMIT 1`
+    );
+
+    if (existing) {
+      // 기존 설정 업데이트
+      await db.query(
+        `UPDATE wallet_settings
+         SET deposit_fee_rate = ?, withdraw_fee_rate = ?, auto_approve = ?, updated_at = NOW()
+         WHERE id = ?`,
+        [deposit_fee_rate, withdraw_fee_rate, auto_approve, existing.id]
+      );
+    } else {
+      // 새 설정 생성
+      await db.query(
+        `INSERT INTO wallet_settings (deposit_fee_rate, withdraw_fee_rate, auto_approve, created_at, updated_at)
+         VALUES (?, ?, ?, NOW(), NOW())`,
+        [deposit_fee_rate, withdraw_fee_rate, auto_approve]
+      );
+    }
+
+    res.json({ success: true, message: 'Settings saved successfully' });
+  } catch (err) {
+    console.error('❌ 설정 저장 실패:', err);
+    res.status(500).json({ error: 'Failed to save settings' });
+  }
+});
+
+// GET /api/wallet/requests - 출금 요청 목록 조회
+router.get('/requests', async (req, res) => {
+  try {
+    // withdrawals 테이블에서 출금 요청 조회
+    const [requests] = await db.query(
+      `SELECT 
+         w.id,
+         w.user_id,
+         u.email as user_email,
+         w.amount,
+         w.to_address as address,
+         w.status,
+         w.created_at,
+         w.updated_at as processed_at
+       FROM withdrawals w
+       JOIN users u ON w.user_id = u.id
+       WHERE w.flow_type = 'WITHDRAWAL'
+       ORDER BY w.created_at DESC
+       LIMIT 100`
+    );
+
+    res.json(requests);
+  } catch (err) {
+    console.error('❌ 출금 요청 조회 실패:', err);
+    res.status(500).json({ error: 'Failed to fetch requests' });
   }
 });
 

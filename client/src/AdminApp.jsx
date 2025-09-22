@@ -24,7 +24,7 @@ import TokensAdminPage from './pages/admin/TokensAdminPage';
 import TokenLogsPage from './pages/admin/TokenLogsPage';
 import ChatAdminLoginPage from './pages/chat/ChatAdminLoginPage';
 import ChatAdminUserListPage from './pages/chat/ChatAdminUserListPage';
-import AdminTopNav from './components/admin/AdminTopNav';
+import AdminLayout from './components/admin/AdminLayout';
 
 import axios from 'axios';
 
@@ -42,7 +42,8 @@ function AdminAppInner() {
     '/login',
     '/chat-admin/login',
     '/chat-admin/users',
-    '/chat-admin'
+    '/chat-admin',
+    '/chat/admin/login'  // 추가: 실제 요청되는 경로
   ];
 
   if (location === '/chat-admin') {
@@ -54,6 +55,7 @@ function AdminAppInner() {
       <Routes>
         <Route path="/login" element={<AdminLogin />} />
         <Route path="/chat-admin/login" element={<ChatAdminLoginPage />} />
+        <Route path="/chat/admin/login" element={<ChatAdminLoginPage />} />
         <Route path="/chat-admin/users" element={<ChatAdminUserListPage />} />
       </Routes>
     );
@@ -72,37 +74,37 @@ function AdminAppInner() {
   };
 
   return (
-    <>
-      <AdminTopNav />
+    <AdminLayout onLogout={handleLogout}>
       <Routes>
         <Route path="/" element={<Navigate to="/login" replace />} />
         <Route path="/login" element={<AdminLogin />} />
         {/* Chat Admin Routes */}
         <Route path="/chat-admin/login" element={<ChatAdminLoginPage />} />
+        <Route path="/chat/admin/login" element={<ChatAdminLoginPage />} />
         <Route path="/chat-admin/users" element={<ChatAdminUserListPage />} />
 
-        <Route path="/popup" element={<AdminPopupManager onLogout={handleLogout} />} />
-        <Route path="/dashboard" element={<AdminDashboard onLogout={handleLogout} />} />
-        <Route path="/quantpage" element={<TeamManagementPage onLogout={handleLogout} />} />
-        <Route path="/quantrank" element={<QuantLeaderboardPage onLogout={handleLogout} />} />
-        <Route path="/content" element={<AdminContentManager onLogout={handleLogout} />} />
-        <Route path="/invite-rewards" element={<AdminInviteRewardsPage onLogout={handleLogout} />} />
-        <Route path="/token" element={<TokensAdminPage onLogout={handleLogout} />} />
-        <Route path="/tokensales" element={<TokenSalesAdminPage onLogout={handleLogout} />} />
-        <Route path="/tokenlogs" element={<TokenLogsPage onLogout={handleLogout} />} />
-        <Route path="/admin-rewards" element={<AdminJoinRewardsPage onLogout={handleLogout} />} />
-        <Route path="/users/info" element={<AdminUserInfoPage onLogout={handleLogout} />} />
-        <Route path="/users/level" element={<AdminUserLevelPage onLogout={handleLogout} />} />
-        <Route path="/users/referral" element={<AdminUserReferralPage onLogout={handleLogout} />} />
-        <Route path="/wallet-admin" element={<WalletAdminPage onLogout={handleLogout} />} />
-        <Route path="/wallet-settings" element={<AdminWalletSettings onLogout={handleLogout} />} />
-        <Route path="/wallet-deposits" element={<AdminWalletsPage onLogout={handleLogout} />} />
-        <Route path="/wallet-withdrawals" element={<AdminWalletPage onLogout={handleLogout} />} />
-        <Route path="/bnb-wallet" element={<AdminBNBWalletPage onLogout={handleLogout} />} />
-        <Route path="/wallet-withdraw" element={<AdminWithdrawalsPage onLogout={handleLogout} />} />
-        <Route path="/users" element={<AdminUserManager onLogout={handleLogout} />} />
+        <Route path="/popup" element={<AdminPopupManager />} />
+        <Route path="/dashboard" element={<AdminDashboard />} />
+        <Route path="/quantpage" element={<TeamManagementPage />} />
+        <Route path="/quantrank" element={<QuantLeaderboardPage />} />
+        <Route path="/content" element={<AdminContentManager />} />
+        <Route path="/invite-rewards" element={<AdminInviteRewardsPage />} />
+        <Route path="/token" element={<TokensAdminPage />} />
+        <Route path="/tokensales" element={<TokenSalesAdminPage />} />
+        <Route path="/tokenlogs" element={<TokenLogsPage />} />
+        <Route path="/admin-rewards" element={<AdminJoinRewardsPage />} />
+        <Route path="/users/info" element={<AdminUserInfoPage />} />
+        <Route path="/users/level" element={<AdminUserLevelPage />} />
+        <Route path="/users/referral" element={<AdminUserReferralPage />} />
+        <Route path="/wallet-admin" element={<WalletAdminPage />} />
+        <Route path="/wallet-settings" element={<AdminWalletSettings />} />
+        <Route path="/wallet-deposits" element={<AdminWalletsPage />} />
+        <Route path="/wallet-withdrawals" element={<AdminWalletPage />} />
+        <Route path="/bnb-wallet" element={<AdminBNBWalletPage />} />
+        <Route path="/wallet-withdraw" element={<AdminWithdrawalsPage />} />
+        <Route path="/users" element={<AdminUserManager />} />
       </Routes>
-    </>
+    </AdminLayout>
   );
 }
 

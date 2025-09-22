@@ -200,16 +200,16 @@ router.get('/transactions', async (req, res) => {
 });
 
 async function getTronBalance(address) {
-    if (!/^T[1-9A-HJ-NP-Za-km-z]{33}$/.test(address)) {
-      throw new Error('Invalid TRON address');
-    }
-    const response = await axios.get('https://apilist.tronscanapi.com/api/accountv2', {
-      params: { address },
-      headers: { 'TRON-PRO-API-KEY': process.env.TRON_API_KEY2 }
-    });
-    const usdtAsset = response.data.withPriceTokens?.find(t => t.tokenId === USDT_CONTRACT);
-    return usdtAsset ? Number(usdtAsset.balance) / 1e6 : 0;
+  if (!/^T[1-9A-HJ-NP-Za-km-z]{33}$/.test(address)) {
+    throw new Error('Invalid TRON address');
   }
+  const response = await axios.get('https://apilist.tronscanapi.com/api/accountv2', {
+    params: { address },
+    headers: { 'TRON-PRO-API-KEY': process.env.TRON_API_KEY2 }
+  });
+  const usdtAsset = response.data.withPriceTokens?.find(t => t.tokenId === USDT_CONTRACT);
+  return usdtAsset ? Number(usdtAsset.balance) / 1e6 : 0;
+}
 
 // ▶ 5. 자금 회수 (리팩토링)
 router.post('/reclaim-funds', async (req, res) => {
@@ -307,7 +307,7 @@ router.post('/fund-wallet', async (req, res) => {
       'SELECT admin_address, admin_private_key FROM reclaim_settings ORDER BY id DESC LIMIT 1'
     );
     const adminAddr = setting.admin_address;
-    const adminKey  = setting.admin_private_key;
+    const adminKey = setting.admin_private_key;
 
     // 2) 주소 유효성 검사
     const tronWeb = getTronWeb(adminKey);
@@ -326,7 +326,7 @@ router.post('/fund-wallet', async (req, res) => {
       `INSERT INTO transaction_log
          (from_address, to_address, amount_usdt, amount_trx, tx_hash, status, created_at)
        VALUES (?, ?, NULL, ?, ?, 'SUCCESS', NOW())`,
-      [ adminAddr, toAddress, amount, txHash ]
+      [adminAddr, toAddress, amount, txHash]
     );
 
     return res.json({ success: true, txHash });
@@ -361,7 +361,229 @@ router.get('/reclaim-settings', async (req, res) => {
     res.status(500).json({ error: 'Failed to fetch reclaim settings' });
   }
 });
+// ========== 관리자용 Tron API ==========
+
+// 지갑 목록 조회
+router.get('/admin/wallets', async (req, res) => {
+  try {
+    const [rows] = await db.query(`
+      SELECT id, address, private_key, updated_at
+      FROM wallets 
+      WHERE address IS NOT NULL
+      ORDER BY updated_at DESC
+    `);
+    res.json(rows);
+  } catch (err) {
+    console.error('❌ Tron 지갑 목록 조회 실패:', err);
+    res.status(500).json({ error: 'Failed to fetch wallets' });
+  }
+});
+
+// 관리자 설정 조회
+router.get('/admin/settings', async (req, res) => {
+  try {
+    const [[row]] = await db.query(
+      'SELECT admin_address, threshold FROM reclaim_settings ORDER BY id DESC LIMIT 1'
+    );
+    res.json(row || {});
+  } catch (err) {
+    console.error('❌ 관리자 설정 조회 실패:', err);
+    res.status(500).json({ error: 'Failed to fetch settings' });
+  }
+});
+
+// TRX 잔액 조회
+router.get('/admin/balance/:address/trx', async (req, res) => {
+  try {
+    const { address } = req.params;
+    const tronWeb = getTronWeb();
+    const sunBalance = await tronWeb.trx.getBalance(address);
+    const trxBalance = tronWeb.fromSun(sunBalance);
+    res.json({ balance: Number(trxBalance) });
+  } catch (err) {
+    console.error('❌ TRX 잔액 조회 실패:', err);
+    res.status(500).json({ error: 'Failed to fetch TRX balance' });
+  }
+});
+
+// USDT 잔액 조회
+router.get('/admin/balance/:address/usdt', async (req, res) => {
+  try {
+    const { address } = req.params;
+    const usdtBalance = await getTronBalance(address);
+    res.json({ balance: usdtBalance });
+  } catch (err) {
+    console.error('❌ USDT 잔액 조회 실패:', err);
+    res.status(500).json({ error: 'Failed to fetch USDT balance' });
+  }
+});
+
+// 지갑 생성
+router.post('/admin/create-wallet', async (req, res) => {
+  try {
+    const tronWeb = getTronWeb();
+    const account = tronWeb.utils.accounts.generateAccount();
+
+    // 관리자용 지갑은 별도 테이블에 저장하거나, 기존 지갑을 업데이트
+    // 먼저 기존 관리자 지갑이 있는지 확인
+    const [existingWallets] = await db.query(
+      'SELECT id FROM wallets WHERE user_id = 1'
+    );
+
+    if (existingWallets.length > 0) {
+      // 기존 지갑이 있으면 업데이트
+      await db.query(
+        'UPDATE wallets SET address = ?, private_key = ?, updated_at = NOW() WHERE user_id = 1',
+        [account.address.base58, account.privateKey]
+      );
+    } else {
+      // 기존 지갑이 없으면 새로 생성
+      await db.query(
+        'INSERT INTO wallets (user_id, address, private_key, quant_balance, fund_balance, updated_at) VALUES (1, ?, ?, 0, 0, NOW())',
+        [account.address.base58, account.privateKey]
+      );
+    }
+
+    res.json({
+      address: account.address.base58,
+      privateKey: account.privateKey
+    });
+  } catch (err) {
+    console.error('❌ 지갑 생성 실패:', err);
+    res.status(500).json({ error: 'Failed to create wallet' });
+  }
+});
+
+// 전송
+router.post('/admin/transfer', async (req, res) => {
+  try {
+    const { from_wallet_id, to_address, amount, type } = req.body;
+
+    // 지갑 정보 조회
+    const [[wallet]] = await db.query(
+      'SELECT address, private_key FROM wallets WHERE id = ?',
+      [from_wallet_id]
+    );
+
+    if (!wallet) {
+      return res.status(404).json({ error: 'Wallet not found' });
+    }
+
+    const tronWeb = getTronWeb(wallet.private_key);
+
+    if (type === 'trx') {
+      // TRX 전송
+      const sunAmount = tronWeb.toSun(amount);
+      const tx = await tronWeb.trx.sendTransaction(to_address, sunAmount);
+
+      // 트랜잭션 로그 기록
+      await db.query(
+        'INSERT INTO transaction_log (from_address, to_address, amount_trx, tx_hash, status, created_at) VALUES (?, ?, ?, ?, "SUCCESS", NOW())',
+        [wallet.address, to_address, amount, tx.txid]
+      );
+
+      res.json({ success: true, txHash: tx.txid });
+    } else if (type === 'usdt') {
+      // USDT 전송 (구현 필요)
+      res.json({ success: false, message: 'USDT transfer not implemented yet' });
+    } else {
+      res.status(400).json({ error: 'Invalid transfer type' });
+    }
+  } catch (err) {
+    console.error('❌ 전송 실패:', err);
+    res.status(500).json({ error: 'Transfer failed' });
+  }
+});
+
+// 트랜잭션 내역 조회
+router.get('/admin/transactions', async (req, res) => {
+  try {
+    const [rows] = await db.query(`
+      SELECT 
+        tl.id,
+        tl.from_address,
+        tl.to_address,
+        tl.amount_trx,
+        tl.amount_usdt,
+        tl.tx_hash,
+        tl.status,
+        tl.created_at,
+        CASE 
+          WHEN tl.from_address IN (SELECT address FROM wallets WHERE address IS NOT NULL) THEN 'send'
+          ELSE 'receive'
+        END as type,
+        CASE 
+          WHEN tl.amount_trx IS NOT NULL THEN tl.amount_trx
+          ELSE tl.amount_usdt
+        END as amount,
+        CASE 
+          WHEN tl.amount_trx IS NOT NULL THEN 'TRX'
+          ELSE 'USDT'
+        END as currency
+      FROM transaction_log tl
+      WHERE tl.from_address IN (SELECT address FROM wallets WHERE address IS NOT NULL)
+         OR tl.to_address IN (SELECT address FROM wallets WHERE address IS NOT NULL)
+      ORDER BY tl.created_at DESC
+      LIMIT 100
+    `);
+    res.json(rows);
+  } catch (err) {
+    console.error('❌ 트랜잭션 내역 조회 실패:', err);
+    res.status(500).json({ error: 'Failed to fetch transactions' });
+  }
+});
+
+// 회수
+router.post('/admin/reclaim', async (req, res) => {
+  try {
+    const { wallet_id } = req.body;
+
+    // 지갑 정보 조회
+    const [[wallet]] = await db.query(
+      'SELECT address, private_key FROM wallets WHERE id = ?',
+      [wallet_id]
+    );
+
+    if (!wallet) {
+      return res.status(404).json({ error: 'Wallet not found' });
+    }
+
+    // 관리자 설정 조회
+    const [[setting]] = await db.query(
+      'SELECT admin_address, admin_private_key FROM reclaim_settings ORDER BY id DESC LIMIT 1'
+    );
+
+    if (!setting) {
+      return res.status(404).json({ error: 'Admin settings not found' });
+    }
+
+    const tronWeb = getTronWeb(wallet.private_key);
+
+    // TRX 잔액 조회
+    const sunBalance = await tronWeb.trx.getBalance(wallet.address);
+    const trxBalance = tronWeb.fromSun(sunBalance);
+
+    if (Number(trxBalance) > 0) {
+      // TRX 전송
+      const tx = await tronWeb.trx.sendTransaction(setting.admin_address, sunBalance);
+
+      // 트랜잭션 로그 기록
+      await db.query(
+        'INSERT INTO transaction_log (from_address, to_address, amount_trx, tx_hash, status, created_at) VALUES (?, ?, ?, ?, "SUCCESS", NOW())',
+        [wallet.address, setting.admin_address, trxBalance, tx.txid]
+      );
+
+      res.json({ success: true, txHash: tx.txid, amount: trxBalance });
+    } else {
+      res.json({ success: true, message: 'No TRX to reclaim' });
+    }
+  } catch (err) {
+    console.error('❌ 회수 실패:', err);
+    res.status(500).json({ error: 'Reclaim failed' });
+  }
+});
+
 module.exports = {
-    router,
-    getTronBalance
-  };
+  router,
+  getTronBalance
+};

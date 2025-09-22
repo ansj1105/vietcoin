@@ -52,12 +52,14 @@ router.get('/token-sales', async (_req, res) => {
   try {
     const [rows] = await db.query(`
       SELECT
-        id, token_id, name, total_supply, remaining_supply,
-        price, fee_rate, start_time, end_time, is_active,
-        minimum_purchase, maximum_purchase, lockup_period,
-        created_at, updated_at
-      FROM token_sales
-      ORDER BY created_at DESC
+        ts.id, ts.token_id, ts.name, ts.total_supply, ts.remaining_supply,
+        ts.price, ts.fee_rate, ts.start_time, ts.end_time, ts.is_active,
+        ts.minimum_purchase, ts.maximum_purchase, ts.lockup_period,
+        ts.created_at, ts.updated_at,
+        t.symbol as token_symbol
+      FROM token_sales ts
+      LEFT JOIN tokens t ON ts.token_id = t.id
+      ORDER BY ts.created_at DESC
     `);
     res.json({ success: true, data: rows });
   } catch (err) {
@@ -481,19 +483,23 @@ router.get('/token-purchases', async (_req, res) => {
   try {
     const [rows] = await db.query(
       `SELECT
-         id,
-         user_id,
-         token_id,
-         sale_id,
-         amount,
-         price,
-         total_price,
-         status,
-         lockup_until,
-         created_at,
-         updated_at
-       FROM token_purchases
-       ORDER BY created_at DESC`
+         tp.id,
+         tp.user_id,
+         tp.token_id,
+         tp.sale_id,
+         tp.amount,
+         tp.price,
+         tp.total_price as total_amount,
+         tp.status,
+         tp.lockup_until,
+         tp.created_at,
+         tp.updated_at,
+         u.email as user_email,
+         t.symbol as token_symbol
+       FROM token_purchases tp
+       LEFT JOIN users u ON tp.user_id = u.id
+       LEFT JOIN tokens t ON tp.token_id = t.id
+       ORDER BY tp.created_at DESC`
     );
     res.json({ success: true, data: rows });
   } catch (err) {
